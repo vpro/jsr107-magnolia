@@ -203,7 +203,7 @@
   <repositories>
     <repository>
       <id>magnolia-nexus</id>
-      <url>http://nexus.magnolia-cms.com/content/groups/public</url>
+      <url>https://nexus.magnolia-cms.com/content/groups/public</url>
     </repository>
   </repositories>
 
