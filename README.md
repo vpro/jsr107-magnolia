@@ -12,7 +12,7 @@ Configure it like so:
   <components>
     <id>main</id>
     <configurer>
-      <class>nl.vpro.jsr107magnolia.CacheConfigurer</class>
+      <class>nl.vpro.magnolia.jsr107.CacheConfigurer</class>
     </configurer>
   </components>
 </module>

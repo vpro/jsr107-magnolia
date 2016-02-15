@@ -1,4 +1,9 @@
-package nl.vpro.jsr107magnolia;
+package nl.vpro.magnolia.jsr107;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
@@ -8,21 +13,17 @@ import javax.cache.integration.CompletionListener;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Michiel Meeuwissen
  * @since 1.0
  */
-class AdaptedCache<K, V> implements Cache<K, V> {
+public class AdaptedCache<K, V> implements Cache<K, V> {
 
 	private final info.magnolia.module.cache.Cache mgnlCache;
 
 	public AdaptedCache(info.magnolia.module.cache.Cache mgnlCache) {
-		this.mgnlCache = mgnlCache;
+        this.mgnlCache = mgnlCache;
 	}
 
 	@Override
@@ -128,7 +129,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
 	@Override
 	public <C extends Configuration<K, V>> C getConfiguration(Class<C> clazz) {
-		return (C) MgnlCacheConfiguration.instance;
+		return (C) MgnlCacheConfiguration.INSTANCE;
 	}
 
 	@Override
@@ -200,7 +201,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
 					}
 
-                    @Override
+					@Override
 					public V getValue() {
 						return (V) mgnlCache.get(key);
 

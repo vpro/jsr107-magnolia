@@ -1,11 +1,11 @@
-package nl.vpro.jsr107magnolia;
+package nl.vpro.magnolia.jsr107;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.TypeLiteral;
-import com.google.inject.matcher.Matchers;
 import info.magnolia.objectfactory.ComponentProvider;
 import info.magnolia.objectfactory.configuration.ComponentConfigurer;
 import info.magnolia.objectfactory.configuration.ComponentProviderConfiguration;
+
+import javax.cache.annotation.*;
+
 import org.aopalliance.intercept.MethodInvocation;
 import org.jsr107.ri.annotations.CacheContextSource;
 import org.jsr107.ri.annotations.DefaultCacheKeyGenerator;
@@ -13,7 +13,9 @@ import org.jsr107.ri.annotations.guice.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.cache.annotation.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.TypeLiteral;
+import com.google.inject.matcher.Matchers;
 
 /**
  * @author Michiel Meeuwissen
@@ -49,6 +51,7 @@ public class CacheConfigurer extends AbstractModule implements ComponentConfigur
         requestInjection(cacheRemoveAllInterceptor);
         bindInterceptor(Matchers.annotatedWith(CacheRemoveAll.class), Matchers.any(), cacheRemoveAllInterceptor);
         bindInterceptor(Matchers.any(), Matchers.annotatedWith(CacheRemoveAll.class), cacheRemoveAllInterceptor);
+
     }
 
     @Override

@@ -1,10 +1,11 @@
-package nl.vpro.jsr107magnolia;
+package nl.vpro.magnolia.jsr107;
+
+import java.lang.annotation.Annotation;
 
 import javax.cache.annotation.CacheMethodDetails;
 import javax.cache.annotation.CacheResolver;
 import javax.cache.annotation.CacheResolverFactory;
 import javax.cache.annotation.CacheResult;
-import java.lang.annotation.Annotation;
 
 /**
  * @author Michiel Meeuwissen

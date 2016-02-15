@@ -1,14 +1,14 @@
-package nl.vpro.jsr107magnolia;
+package nl.vpro.magnolia.jsr107;
 
 import javax.cache.configuration.Configuration;
 
 /**
  * @author Michiel Meeuwissen
- * @since ...
+ * @since 1.0
  */
 public class MgnlCacheConfiguration implements Configuration<Object, Object> {
 
-	static MgnlCacheConfiguration instance = new MgnlCacheConfiguration();
+	static final MgnlCacheConfiguration INSTANCE = new MgnlCacheConfiguration();
 
 	@Override
 	public Class<Object> getKeyType() {
