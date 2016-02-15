@@ -64,9 +64,9 @@ public class MgnlCacheManager implements CacheManager {
 
     @Override
     public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String cacheName, C configuration) throws IllegalArgumentException {
+        LOG.info("Creating cache {}", cacheName);
         info.magnolia.module.cache.Cache mgnlCache = get().getCache(cacheName);
-        LOG.info("Adding for monitoring cache {}", cacheName);
-        monitor.get().addCache(cacheName);  // it seems silly that we have to do this?
+        ensureMonitor(cacheName);
         return new AdaptedCache<K, V>(mgnlCache, this);
 
     }
@@ -79,10 +79,18 @@ public class MgnlCacheManager implements CacheManager {
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
         if (get().getCacheNames().contains(cacheName)) {
-            LOG.info("Creating cache {}", cacheName);
+            LOG.debug("Getting cache {}", cacheName);
+            ensureMonitor(cacheName);
             return new AdaptedCache<K, V>(get().getCache(cacheName), this);
         }
         return createCache(cacheName, null);
+    }
+
+    private void ensureMonitor(String cacheName) {
+        if (!monitor.get().getAll().containsKey(cacheName)) {
+            LOG.info("Adding for monitoring cache {}", cacheName);
+            monitor.get().addCache(cacheName);  // it seems silly that we have to do this?
+        }
     }
 
     @Override
