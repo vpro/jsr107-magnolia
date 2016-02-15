@@ -18,8 +18,8 @@ public class MgnlCacheResolver implements CacheResolver {
     @Inject
     Provider<MgnlCacheManager> cacheManager;
 
-	@Override
-	public <K, V> Cache<K, V> resolveCache(CacheInvocationContext<? extends Annotation> cacheInvocationContext) {
+    @Override
+    public <K, V> Cache<K, V> resolveCache(CacheInvocationContext<? extends Annotation> cacheInvocationContext) {
         return cacheManager.get().getCache(cacheInvocationContext.getCacheName());
-	}
+    }
 }

@@ -17,14 +17,14 @@ public class MgnlCacheResolverFactory implements CacheResolverFactory {
     @Inject
     MgnlCacheResolver resolver;
 
-	@Override
-	public CacheResolver getCacheResolver(CacheMethodDetails<? extends Annotation> cacheMethodDetails) {
-		return resolver;
-	}
+    @Override
+    public CacheResolver getCacheResolver(CacheMethodDetails<? extends Annotation> cacheMethodDetails) {
+        return resolver;
+    }
 
-	@Override
-	public CacheResolver getExceptionCacheResolver(CacheMethodDetails<CacheResult> cacheMethodDetails) {
-		throw new UnsupportedOperationException();
+    @Override
+    public CacheResolver getExceptionCacheResolver(CacheMethodDetails<CacheResult> cacheMethodDetails) {
+        throw new UnsupportedOperationException();
 
-	}
+    }
 }

@@ -8,22 +8,22 @@ import javax.cache.configuration.Configuration;
  */
 public class MgnlCacheConfiguration implements Configuration<Object, Object> {
 
-	static final MgnlCacheConfiguration INSTANCE = new MgnlCacheConfiguration();
+    static final MgnlCacheConfiguration INSTANCE = new MgnlCacheConfiguration();
 
-	@Override
-	public Class<Object> getKeyType() {
-		return Object.class;
+    @Override
+    public Class<Object> getKeyType() {
+        return Object.class;
 
-	}
+    }
 
-	@Override
-	public Class<Object> getValueType() {
-		return Object.class;
+    @Override
+    public Class<Object> getValueType() {
+        return Object.class;
 
-	}
+    }
 
-	@Override
-	public boolean isStoreByValue() {
-		return true;
-	}
+    @Override
+    public boolean isStoreByValue() {
+        return true;
+    }
 }

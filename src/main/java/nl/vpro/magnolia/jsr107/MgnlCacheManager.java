@@ -29,7 +29,7 @@ public class MgnlCacheManager implements CacheManager {
     @Inject
     private Provider<CacheFactory> factory;
 
-    @Inject
+    @Inject 
     private Provider<CacheMonitor> monitor;
 
     private CacheFactory get() {
