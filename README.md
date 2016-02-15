@@ -1,4 +1,6 @@
 # jsr107-magnolia
+[![Build Status](https://travis-ci.org/vpro/jsr107-magnolia.svg?)](https://travis-ci.org/vpro/jsr107-magnolia)
+
 See https://jira.magnolia-cms.com/browse/SUPPORT-5655
 
 
