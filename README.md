@@ -29,3 +29,16 @@ public List<Map.Entry<Movie, Set<RoleType>>> sortedMovies(Person person) {
 ```
 
 In the magnolia cache configuration automaticly a cache 'CinemaUtil-sortedMovies' will appear.
+
+
+Installation
+
+Download the most recent jar from: https://oss.sonatype.org/content/repositories/snapshots/nl/vpro/jsr107-magnolia
+
+Or you can add this to your pom.xml
+
+<dependency>
+    <groupId>nl.vpro</groupId>
+    <artifactId>jsr107-magnolia</artifactId>
+    <version>1.0-SNAPSHOT</version>
+</dependency>
