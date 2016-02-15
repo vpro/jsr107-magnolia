@@ -1,8 +1,5 @@
 package nl.vpro.magnolia.jsr107;
 
-import info.magnolia.module.cache.CacheFactory;
-import info.magnolia.objectfactory.Components;
-
 import java.lang.annotation.Annotation;
 
 import javax.cache.Cache;
@@ -17,14 +14,12 @@ import javax.inject.Provider;
  */
 public class MgnlCacheResolver implements CacheResolver {
 
+
     @Inject
-    Provider<CacheFactory> cacheFactory;
+    Provider<MgnlCacheManager> cacheManager;
 
 	@Override
 	public <K, V> Cache<K, V> resolveCache(CacheInvocationContext<? extends Annotation> cacheInvocationContext) {
-
-        //info.magnolia.module.cache.Cache mgnlCache = cacheFactory.get().getCache(cacheInvocationContext.getCacheName());
-        info.magnolia.module.cache.Cache mgnlCache = Components.getComponent(CacheFactory.class).getCache(cacheInvocationContext.getCacheName());
-		return new AdaptedCache<K, V>(mgnlCache);
+        return cacheManager.get().getCache(cacheInvocationContext.getCacheName());
 	}
 }

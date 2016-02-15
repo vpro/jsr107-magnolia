@@ -6,6 +6,7 @@ import javax.cache.annotation.CacheMethodDetails;
 import javax.cache.annotation.CacheResolver;
 import javax.cache.annotation.CacheResolverFactory;
 import javax.cache.annotation.CacheResult;
+import javax.inject.Inject;
 
 /**
  * @author Michiel Meeuwissen
@@ -13,9 +14,12 @@ import javax.cache.annotation.CacheResult;
  */
 public class MgnlCacheResolverFactory implements CacheResolverFactory {
 
+    @Inject
+    MgnlCacheResolver resolver;
+
 	@Override
 	public CacheResolver getCacheResolver(CacheMethodDetails<? extends Annotation> cacheMethodDetails) {
-		return new MgnlCacheResolver();
+		return resolver;
 	}
 
 	@Override

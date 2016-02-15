@@ -4,6 +4,7 @@ import info.magnolia.objectfactory.ComponentProvider;
 import info.magnolia.objectfactory.configuration.ComponentConfigurer;
 import info.magnolia.objectfactory.configuration.ComponentProviderConfiguration;
 
+import javax.cache.CacheManager;
 import javax.cache.annotation.*;
 
 import org.aopalliance.intercept.MethodInvocation;
@@ -28,7 +29,11 @@ public class CacheConfigurer extends AbstractModule implements ComponentConfigur
     @Override
     protected void configure() {
         bind(CacheKeyGenerator.class).to(DefaultCacheKeyGenerator.class);
-        bind(CacheResolverFactory.class).to(MgnlCacheResolverFactory.class);
+        bind(MgnlCacheResolver.class).toInstance(new MgnlCacheResolver());
+        MgnlCacheResolverFactory factory = new MgnlCacheResolverFactory();
+        bind(CacheResolverFactory.class).toInstance(factory);
+        bind(CacheManager.class).to(MgnlCacheManager.class);
+
         bind(new TypeLiteral<CacheContextSource<MethodInvocation>>() {
         }).to(CacheLookupUtil.class);
 
