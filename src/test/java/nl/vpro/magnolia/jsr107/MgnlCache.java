@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ *  A mock Magnolia Cache implementations
  * @author Michiel Meeuwissen
  * @since 1.0
  */

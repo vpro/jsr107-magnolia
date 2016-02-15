@@ -9,12 +9,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * A mock Magnolia CacheFactory
  * @author Michiel Meeuwissen
  * @since 1.0
  */
 public class MgnlCacheFactory implements CacheFactory {
 
-    private final Map<String, Cache> caches = new HashMap<String, Cache>();
+    private final Map<String, Cache> caches = new HashMap<>();
     @Override
     public Cache getCache(String name) {
         if (! caches.containsKey(name)) {

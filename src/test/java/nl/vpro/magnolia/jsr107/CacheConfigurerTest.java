@@ -1,6 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.module.cache.CacheFactory;
+import info.magnolia.module.cache.mbean.CacheMonitor;
 
 import javax.cache.CacheManager;
 import javax.cache.annotation.CacheResult;
@@ -13,6 +14,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Michiel Meeuwissen
@@ -39,6 +41,8 @@ public class CacheConfigurerTest {
             @Override
             protected void configure() {
                 binder().bind(CacheFactory.class).toInstance(new MgnlCacheFactory());
+                binder().bind(CacheMonitor.class).toInstance(mock(CacheMonitor.class));
+
             }
         });
 

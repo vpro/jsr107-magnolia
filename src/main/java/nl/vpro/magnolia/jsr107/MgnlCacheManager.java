@@ -1,6 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.module.cache.CacheFactory;
+import info.magnolia.module.cache.mbean.CacheMonitor;
 
 import java.net.URI;
 import java.util.Properties;
@@ -11,6 +12,9 @@ import javax.cache.configuration.Configuration;
 import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Provider;
 
 /**
@@ -19,11 +23,16 @@ import com.google.inject.Provider;
  */
 public class MgnlCacheManager implements CacheManager {
 
+    private static final Logger LOG = LoggerFactory.getLogger(MgnlCacheManager.class);
+
 
     @Inject
     private Provider<CacheFactory> factory;
 
-    private CacheFactory getFactory() {
+    @Inject
+    private Provider<CacheMonitor> monitor;
+
+    private CacheFactory get() {
         return factory.get();
     }
 
@@ -55,8 +64,9 @@ public class MgnlCacheManager implements CacheManager {
 
     @Override
     public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String cacheName, C configuration) throws IllegalArgumentException {
-        info.magnolia.module.cache.Cache mgnlCache = getFactory().getCache(cacheName);
-        getFactory().start(false);
+        info.magnolia.module.cache.Cache mgnlCache = get().getCache(cacheName);
+        LOG.info("Adding for monitoring cache {}", cacheName);
+        monitor.get().addCache(cacheName);  // it seems silly that we have to do this?
         return new AdaptedCache<K, V>(mgnlCache, this);
 
     }
@@ -68,13 +78,16 @@ public class MgnlCacheManager implements CacheManager {
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
-        info.magnolia.module.cache.Cache mgnlCache = getFactory().getCache(cacheName);
-        return new AdaptedCache<K, V>(mgnlCache, this);
+        if (get().getCacheNames().contains(cacheName)) {
+            LOG.info("Creating cache {}", cacheName);
+            return new AdaptedCache<K, V>(get().getCache(cacheName), this);
+        }
+        return createCache(cacheName, null);
     }
 
     @Override
     public Iterable<String> getCacheNames() {
-        return getFactory().getCacheNames();
+        return get().getCacheNames();
     }
 
     @Override
