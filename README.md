@@ -2,7 +2,7 @@
 See https://jira.magnolia-cms.com/browse/SUPPORT-5655
 
 
-Configured it like so:
+Configure it like so:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE module SYSTEM "module.dtd">
