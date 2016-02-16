@@ -1,4 +1,4 @@
-package nl.vpro.magnolia.jsr107;
+package nl.vpro.magnolia.jsr107.mock;
 
 import info.magnolia.module.cache.Cache;
 

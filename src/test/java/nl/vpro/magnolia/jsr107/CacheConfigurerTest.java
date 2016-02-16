@@ -13,6 +13,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+import nl.vpro.magnolia.jsr107.mock.MgnlCacheFactory;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
@@ -56,7 +58,12 @@ public class CacheConfigurerTest {
         assertEquals(0, instance.getCachedCount());
         cacheManager.getCache("counts").clear();
         assertEquals(1, instance.getCachedCount());
-
+    }
+    
+    @Test
+    public void testUnwrap() {
+        assertEquals(MgnlCacheFactory.class, cacheManager.unwrap(MgnlCacheFactory.class).getClass());
+        
     }
 
 
