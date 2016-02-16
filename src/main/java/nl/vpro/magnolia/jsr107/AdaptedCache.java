@@ -21,11 +21,17 @@ import javax.cache.processor.EntryProcessorResult;
 public class AdaptedCache<K, V> implements Cache<K, V> {
 
     private final info.magnolia.module.cache.Cache mgnlCache;
-    private final MgnlCacheManager cacheManager;
+    private final CacheManager cacheManager;
+    private final Configuration<?, ?> configuration;
 
-    public AdaptedCache(info.magnolia.module.cache.Cache mgnlCache, MgnlCacheManager manager) {
+    public AdaptedCache(
+        info.magnolia.module.cache.Cache mgnlCache, 
+        CacheManager manager,
+        Configuration<?, ?> configuration
+        ) {
         this.mgnlCache = mgnlCache;
         this.cacheManager = manager;
+        this.configuration = configuration;
 
     }
 
@@ -161,7 +167,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public <C extends Configuration<K, V>> C getConfiguration(Class<C> clazz) {
-        return (C) MgnlCacheConfiguration.INSTANCE;
+        return (C) configuration;
     }
 
     @Override
@@ -199,7 +205,10 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public <T> T unwrap(Class<T> clazz) {
-        throw new UnsupportedOperationException();
+        if (info.magnolia.module.cache.Cache.class.isAssignableFrom(clazz)) {
+            return (T) mgnlCache;
+        }
+        throw new IllegalArgumentException();
     }
 
     @Override

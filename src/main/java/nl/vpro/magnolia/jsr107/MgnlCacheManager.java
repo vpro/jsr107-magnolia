@@ -67,7 +67,7 @@ public class MgnlCacheManager implements CacheManager {
         LOG.info("Creating cache {}", cacheName);
         info.magnolia.module.cache.Cache mgnlCache = get().getCache(cacheName);
         ensureMonitor(cacheName);
-        return new AdaptedCache<K, V>(mgnlCache, this);
+        return new AdaptedCache<K, V>(mgnlCache, this, configuration);
 
     }
 
@@ -81,7 +81,7 @@ public class MgnlCacheManager implements CacheManager {
         if (get().getCacheNames().contains(cacheName)) {
             LOG.debug("Getting cache {}", cacheName);
             ensureMonitor(cacheName);
-            return new AdaptedCache<K, V>(get().getCache(cacheName), this);
+            return new AdaptedCache<>(get().getCache(cacheName), this, new MgnlCacheConfiguration());
         }
         return createCache(cacheName, null);
     }
@@ -129,7 +129,10 @@ public class MgnlCacheManager implements CacheManager {
 
     @Override
     public <T> T unwrap(Class<T> clazz) {
-        throw new UnsupportedOperationException();
+        if (CacheFactory.class.isAssignableFrom(clazz)) {
+            return (T) factory.get();
+        }
+        throw new IllegalArgumentException();
 
     }
 }
