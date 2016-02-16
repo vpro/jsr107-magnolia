@@ -129,7 +129,7 @@ public class MgnlCacheManager implements CacheManager {
 
     @Override
     public <T> T unwrap(Class<T> clazz) {
-        if (CacheFactory.class.isAssignableFrom(clazz)) {
+        if (factory.get().getClass().isAssignableFrom(clazz)) {
             return (T) factory.get();
         }
         throw new IllegalArgumentException();

@@ -205,7 +205,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public <T> T unwrap(Class<T> clazz) {
-        if (info.magnolia.module.cache.Cache.class.isAssignableFrom(clazz)) {
+        if (mgnlCache.getClass().isAssignableFrom(clazz)) {
             return (T) mgnlCache;
         }
         throw new IllegalArgumentException();
