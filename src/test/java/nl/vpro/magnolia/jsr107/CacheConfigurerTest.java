@@ -84,16 +84,14 @@ public class CacheConfigurerTest {
         for (int i = 0; i < max; i++) {
             final int j = i;
             threads[i] = 
-            new Thread(() -> {
-                results[j] = instance.getCachedCount();
-                System.out.println(j + ":" + results[j]);
-            });
+                new Thread(() -> {
+                    results[j] = instance.getCachedCount();
+                    System.out.println(j + ":" + results[j]);
+                });
             threads[i].start();
         }
         for (int i = 0; i < max; i++) {
             threads[i].join();
-        }
-        for (int i = 0; i < max; i++) {
             assertEquals(0, results[i]); // Fails
         }
     }
