@@ -29,7 +29,7 @@ public class MgnlCacheManager implements CacheManager {
     @Inject
     private Provider<CacheFactory> factory;
 
-    @Inject 
+    @Inject
     private Provider<CacheMonitor> monitor;
 
     private CacheFactory get() {
@@ -87,6 +87,8 @@ public class MgnlCacheManager implements CacheManager {
     }
 
     private void ensureMonitor(String cacheName) {
+        // Magnolia somewhy requires that we register the caches explicitely for monitoring.
+        // Otherwise the does appear in the gui, but will simply give NPE if you try to e.g. clear them.
         if (!monitor.get().getAll().containsKey(cacheName)) {
             LOG.info("Adding for monitoring cache {}", cacheName);
             monitor.get().addCache(cacheName);  // it seems silly that we have to do this?
