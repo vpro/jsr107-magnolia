@@ -14,7 +14,7 @@ public List<Map.Entry<Movie, Set<RoleType>>> sortedMovies(Person person) {
 }
 ```
 
-In thos case the magnolia cache configuration automaticly a cache 'CinemaUtil-sortedMovies' will appear.
+In this case in the magnolia cache configuration automaticly a cache 'CinemaUtil-sortedMovies' will appear.
 
 ##Installation
 
