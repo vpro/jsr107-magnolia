@@ -30,9 +30,9 @@ public class CacheConfigurerTest {
         int count = 0;
 
         @CacheResult(cacheName = "counts")
-        public synchronized  int getCachedCount() {
+        public  int getCachedCount() {
             try {
-                Thread.sleep(100L);
+                Thread.sleep(10L);
             } catch (InterruptedException e) {
             }
             return count++;
