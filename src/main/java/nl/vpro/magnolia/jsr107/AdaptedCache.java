@@ -14,11 +14,16 @@ import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author Michiel Meeuwissen
  * @since 1.0
  */
 public class AdaptedCache<K, V> implements Cache<K, V> {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(AdaptedCache.class); 
 
     private final info.magnolia.module.cache.Cache mgnlCache;
     private final CacheManager cacheManager;
@@ -56,7 +61,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public synchronized void loadAll(Set<? extends K> keys, boolean replaceExistingValues, CompletionListener completionListener) {
-
+        LOG.debug("loading ", keys);
 
     }
 

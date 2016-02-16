@@ -7,6 +7,7 @@ import javax.cache.CacheManager;
 import javax.cache.annotation.CacheResult;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.AbstractModule;
@@ -29,7 +30,11 @@ public class CacheConfigurerTest {
         int count = 0;
 
         @CacheResult(cacheName = "counts")
-        public int getCachedCount() {
+        public synchronized  int getCachedCount() {
+            try {
+                Thread.sleep(100L);
+            } catch (InterruptedException e) {
+            }
             return count++;
         }
     }
@@ -66,5 +71,31 @@ public class CacheConfigurerTest {
         
     }
 
+    // Checking whether the cache is 'blocking'
+    // -> it isn't.
+    // See for similar spring issue: https://jira.spring.io/browse/SPR-9254
+    // https://groups.google.com/forum/m/?fromgroups#!topic/spring-framework-contrib/bVjdVHhZci8
+    @Test
+    @Ignore("Fails!")
+    public void testConcurrency() throws InterruptedException {
+        int max = 10;
+        Thread[] threads = new Thread[max];
+        int[] results = new int[max];
+        for (int i = 0; i < max; i++) {
+            final int j = i;
+            threads[i] = 
+            new Thread(() -> {
+                results[j] = instance.getCachedCount();
+                System.out.println(j + ":" + results[j]);
+            });
+            threads[i].start();
+        }
+        for (int i = 0; i < max; i++) {
+            threads[i].join();
+        }
+        for (int i = 0; i < max; i++) {
+            assertEquals(0, results[i]); // Fails
+        }
+    }
 
 }
