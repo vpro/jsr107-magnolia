@@ -25,6 +25,6 @@ Or you can add this to your pom.xml
 <dependency>
   <groupId>nl.vpro</groupId>
   <artifactId>jsr107-magnolia</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
 </dependency>
 ```
