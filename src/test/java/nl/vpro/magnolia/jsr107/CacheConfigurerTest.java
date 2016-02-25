@@ -1,6 +1,6 @@
 package nl.vpro.magnolia.jsr107;
 
-import info.magnolia.module.cache.CacheFactory;
+import info.magnolia.module.cache.inject.CacheFactoryProvider;
 import info.magnolia.module.cache.mbean.CacheMonitor;
 
 import javax.cache.CacheManager;
@@ -18,6 +18,7 @@ import nl.vpro.magnolia.jsr107.mock.MgnlCacheFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Michiel Meeuwissen
@@ -29,6 +30,8 @@ public class CacheConfigurerTest {
     public static class TestClass {
         int count = 0;
 
+        int constant = 0;
+
         @CacheResult(cacheName = "counts")
         public  int getCachedCount() {
             try {
@@ -37,9 +40,14 @@ public class CacheConfigurerTest {
             }
             return count++;
         }
+        @CacheResult(cacheName = "constants", cacheKeyGenerator = MethodKey.class)
+        public int constant() {
+            return constant++;
+        }
     }
     TestClass instance;
     CacheManager cacheManager;
+    MgnlCacheFactory f;
 
     @Before
     public void setup() {
@@ -47,8 +55,12 @@ public class CacheConfigurerTest {
         Injector injector = Guice.createInjector(new CacheConfigurer(), new AbstractModule() {
             @Override
             protected void configure() {
-                binder().bind(CacheFactory.class).toInstance(new MgnlCacheFactory());
+                f = new MgnlCacheFactory();
+                CacheFactoryProvider fp = mock(CacheFactoryProvider.class);
+                when(fp.get()).thenReturn(f);
+                binder().bind(CacheFactoryProvider.class).toInstance(fp);
                 binder().bind(CacheMonitor.class).toInstance(mock(CacheMonitor.class));
+
 
             }
         });
@@ -64,11 +76,18 @@ public class CacheConfigurerTest {
         cacheManager.getCache("counts").clear();
         assertEquals(1, instance.getCachedCount());
     }
-    
+
     @Test
     public void testUnwrap() {
         assertEquals(MgnlCacheFactory.class, cacheManager.unwrap(MgnlCacheFactory.class).getClass());
-        
+
+    }
+
+    @Test
+    public void testConstantCacheKeyGenerator() {
+        assertEquals(0, instance.constant());
+        assertEquals(0, instance.constant());
+        System.out.println(f.caches.get("constants").getKeys().iterator().next());
     }
 
     // Checking whether the cache is 'blocking'
@@ -83,7 +102,7 @@ public class CacheConfigurerTest {
         int[] results = new int[max];
         for (int i = 0; i < max; i++) {
             final int j = i;
-            threads[i] = 
+            threads[i] =
                 new Thread(() -> {
                     results[j] = instance.getCachedCount();
                     System.out.println(j + ":" + results[j]);

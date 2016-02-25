@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public class MgnlCacheFactory implements CacheFactory {
 
-    private final Map<String, Cache> caches = new HashMap<>();
+    public final Map<String, Cache> caches = new HashMap<>();
     @Override
     public Cache getCache(String name) {
         if (! caches.containsKey(name)) {

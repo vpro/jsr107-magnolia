@@ -1,6 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.module.cache.CacheFactory;
+import info.magnolia.module.cache.inject.CacheFactoryProvider;
 import info.magnolia.module.cache.mbean.CacheMonitor;
 
 import java.net.URI;
@@ -27,7 +28,7 @@ public class MgnlCacheManager implements CacheManager {
 
 
     @Inject
-    private Provider<CacheFactory> factory;
+    private CacheFactoryProvider factory;
 
     @Inject
     private Provider<CacheMonitor> monitor;
@@ -67,7 +68,7 @@ public class MgnlCacheManager implements CacheManager {
         LOG.info("Creating cache {}", cacheName);
         info.magnolia.module.cache.Cache mgnlCache = get().getCache(cacheName);
         ensureMonitor(cacheName);
-        return new AdaptedCache<K, V>(mgnlCache, this, configuration);
+        return new AdaptedCache<>(mgnlCache, this, configuration);
 
     }
 
@@ -89,7 +90,7 @@ public class MgnlCacheManager implements CacheManager {
     private void ensureMonitor(String cacheName) {
         // Magnolia somewhy requires that we register the caches explicitely for monitoring.
         // Otherwise the does appear in the gui, but will simply give NPE if you try to e.g. clear them.
-        if (!monitor.get().getAll().containsKey(cacheName)) {
+        if (!monitor.get().getFlushes().containsKey(cacheName)) {
             LOG.info("Adding for monitoring cache {}", cacheName);
             monitor.get().addCache(cacheName);  // it seems silly that we have to do this?
         }
@@ -132,7 +133,7 @@ public class MgnlCacheManager implements CacheManager {
         if (factory.get().getClass().isAssignableFrom(clazz)) {
             return (T) factory.get();
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Factory is not a " + clazz + " but a " + factory.get().getClass());
 
     }
 }
