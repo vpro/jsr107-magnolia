@@ -21,7 +21,8 @@ import org.jsr107.ri.annotations.DefaultGeneratedCacheKey;
 public class MethodKey implements CacheKeyGenerator {
     @Override
     public GeneratedCacheKey generateCacheKey(CacheKeyInvocationContext<? extends Annotation> cacheKeyInvocationContext) {
-        return new DefaultGeneratedCacheKey(new Object[] {cacheKeyInvocationContext.getMethod()});
+        String key = cacheKeyInvocationContext.getMethod().toGenericString();
+        return new DefaultGeneratedCacheKey(new Object[] {key});
 
     }
 }
