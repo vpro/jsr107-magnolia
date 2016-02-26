@@ -7,16 +7,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *  A mock Magnolia Cache implementations
+ * A mock Magnolia Cache implementations
  * @author Michiel Meeuwissen
  * @since 1.0
  */
-public class MgnlCache implements Cache  {
+public class MockCache implements Cache  {
     private final Map<Object, Object> backing = new HashMap<>();
 
     private final String name;
 
-    public MgnlCache(String name) {
+    public MockCache(String name) {
         this.name = name;
     }
 

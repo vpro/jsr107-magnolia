@@ -22,7 +22,11 @@ public class MethodKey implements CacheKeyGenerator {
     @Override
     public GeneratedCacheKey generateCacheKey(CacheKeyInvocationContext<? extends Annotation> cacheKeyInvocationContext) {
         String key = cacheKeyInvocationContext.getMethod().toGenericString();
+<<<<<<< HEAD
         return new DefaultGeneratedCacheKey(new Object[] {key});
+=======
+        return new DefaultGeneratedCacheKey(new Object[] { key });
+>>>>>>> fc80c08ddbb5e7bffbc62aa371c488ea5282977b
 
     }
 }

@@ -13,13 +13,13 @@ import java.util.Map;
  * @author Michiel Meeuwissen
  * @since 1.0
  */
-public class MgnlCacheFactory implements CacheFactory {
+public class MockCacheFactory implements CacheFactory {
 
     public final Map<String, Cache> caches = new HashMap<>();
     @Override
     public Cache getCache(String name) {
         if (! caches.containsKey(name)) {
-            caches.put(name, new MgnlCache(name));
+            caches.put(name, new MockCache(name));
         }
         return caches.get(name);
 
