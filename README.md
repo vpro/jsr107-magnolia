@@ -28,3 +28,7 @@ Or you can add this to your pom.xml
   <version>1.0</version>
 </dependency>
 ```
+###Configuration
+You can configure the create cache like so in the JCR-tree:
+![cache configuration](cache-config.png?raw=true "Cache configuration")
+
