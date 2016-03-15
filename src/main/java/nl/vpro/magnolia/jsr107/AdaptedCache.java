@@ -22,15 +22,15 @@ import org.slf4j.LoggerFactory;
  * @since 1.0
  */
 public class AdaptedCache<K, V> implements Cache<K, V> {
-    
-    private static final Logger LOG = LoggerFactory.getLogger(AdaptedCache.class); 
+
+    private static final Logger LOG = LoggerFactory.getLogger(AdaptedCache.class);
 
     private final info.magnolia.module.cache.Cache mgnlCache;
     private final CacheManager cacheManager;
     private final Configuration<?, ?> configuration;
 
     public AdaptedCache(
-        info.magnolia.module.cache.Cache mgnlCache, 
+        info.magnolia.module.cache.Cache mgnlCache,
         CacheManager manager,
         Configuration<?, ?> configuration
         ) {
@@ -41,12 +41,12 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public synchronized V get(K key) {
+    public V get(K key) {
         return (V) mgnlCache.get(key);
     }
 
     @Override
-    public  synchronized  Map<K, V> getAll(Set<? extends K> keys) {
+    public Map<K, V> getAll(Set<? extends K> keys) {
         Map<K, V> result = new HashMap<>();
         for (K k : keys) {
             result.put(k, (V) mgnlCache.get(k));
@@ -55,36 +55,36 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public synchronized boolean containsKey(K key) {
+    public boolean containsKey(K key) {
         return mgnlCache.hasElement(key);
     }
 
     @Override
-    public synchronized void loadAll(Set<? extends K> keys, boolean replaceExistingValues, CompletionListener completionListener) {
+    public void loadAll(Set<? extends K> keys, boolean replaceExistingValues, CompletionListener completionListener) {
         LOG.debug("loading ", keys);
 
     }
 
     @Override
-    public synchronized void put(K key, V value) {
+    public void put(K key, V value) {
         mgnlCache.put(key, value);
     }
 
     @Override
-    public synchronized V getAndPut(K key, V value) {
+    public V getAndPut(K key, V value) {
         mgnlCache.put(key, value);
         return value;
     }
 
     @Override
-    public synchronized void putAll(Map<? extends K, ? extends V> map) {
+    public void putAll(Map<? extends K, ? extends V> map) {
         for (Map.Entry<? extends K, ? extends V> e : map.entrySet()) {
             mgnlCache.put(e.getKey(), e.getValue());
         }
     }
 
     @Override
-    public synchronized boolean putIfAbsent(K key, V value) {
+    public boolean putIfAbsent(K key, V value) {
         if (! mgnlCache.hasElement(key)) {
             mgnlCache.put(key, value);
             return true;
@@ -95,7 +95,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public synchronized boolean remove(K key) {
+    public boolean remove(K key) {
         boolean result = mgnlCache.hasElement(key);
         mgnlCache.remove(key);
         return result;
@@ -103,7 +103,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public synchronized boolean remove(K key, V oldValue) {
+    public boolean remove(K key, V oldValue) {
         V compare = (V) mgnlCache.get(key);
         if (compare != null && compare.equals(oldValue)) {
             mgnlCache.remove(key);
@@ -114,7 +114,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public synchronized V getAndRemove(K key) {
+    public V getAndRemove(K key) {
         V result = get(key);
         remove(key);
         return result;
@@ -122,7 +122,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public synchronized boolean replace(K key, V oldValue, V newValue) {
+    public boolean replace(K key, V oldValue, V newValue) {
         V compare = (V) mgnlCache.get(key);
         if (compare != null && compare.equals(oldValue)) {
             mgnlCache.put(key, newValue);
@@ -133,7 +133,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public synchronized boolean replace(K key, V value) {
+    public boolean replace(K key, V value) {
         boolean result = mgnlCache.hasElement(key);
         if (result) {
             mgnlCache.put(key, value);
@@ -143,7 +143,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public synchronized V getAndReplace(K key, V value) {
+    public V getAndReplace(K key, V value) {
         if (mgnlCache.hasElement(key)) {
             V oldValue = (V) mgnlCache.get(key);
             mgnlCache.put(key, value);
@@ -154,19 +154,19 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public synchronized void removeAll(Set<? extends K> keys) {
+    public void removeAll(Set<? extends K> keys) {
         for (K key : keys) {
             mgnlCache.remove(key);
         }
     }
 
     @Override
-    public synchronized void removeAll() {
+    public void removeAll() {
         mgnlCache.clear();
     }
 
     @Override
-    public synchronized void clear() {
+    public void clear() {
         mgnlCache.clear();
     }
 
