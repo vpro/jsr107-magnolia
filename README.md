@@ -14,6 +14,8 @@ public List<Map.Entry<Movie, Set<RoleType>>> sortedMovies(Person person) {
 }
 ```
 
+Note: Sadly, model classes are not instantiated by guice, but by Magnolia itself, so they cannot be proxied by guice.
+
 In this case in the magnolia cache configuration automaticly a cache 'CinemaUtil-sortedMovies' will appear.
 
 ##Installation
