@@ -2,21 +2,16 @@ package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.module.cache.CacheFactory;
 import info.magnolia.module.cache.inject.CacheFactoryProvider;
-import info.magnolia.module.cache.mbean.CacheMonitor;
-
-import java.net.URI;
-import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.Configuration;
 import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Provider;
+import java.net.URI;
+import java.util.Properties;
 
 /**
  * @author Michiel Meeuwissen
@@ -26,12 +21,8 @@ public class MgnlCacheManager implements CacheManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(MgnlCacheManager.class);
 
-
     @Inject
     private CacheFactoryProvider factory;
-
-    @Inject
-    private Provider<CacheMonitor> monitor;
 
     private CacheFactory get() {
         return factory.get();
@@ -67,7 +58,6 @@ public class MgnlCacheManager implements CacheManager {
     public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String cacheName, C configuration) throws IllegalArgumentException {
         LOG.info("Creating cache {}", cacheName);
         info.magnolia.module.cache.Cache mgnlCache = get().getCache(cacheName);
-        ensureMonitor(cacheName);
         return new AdaptedCache<>(mgnlCache, this, configuration);
 
     }
@@ -81,20 +71,11 @@ public class MgnlCacheManager implements CacheManager {
     public <K, V> Cache<K, V> getCache(String cacheName) {
         if (get().getCacheNames().contains(cacheName)) {
             LOG.debug("Getting cache {}", cacheName);
-            ensureMonitor(cacheName);
             return new AdaptedCache<>(get().getCache(cacheName), this, new MgnlCacheConfiguration());
         }
         return createCache(cacheName, null);
     }
 
-    private void ensureMonitor(String cacheName) {
-        // Magnolia somewhy requires that we register the caches explicitely for monitoring.
-        // Otherwise the does appear in the gui, but will simply give NPE if you try to e.g. clear them.
-        if (!monitor.get().getFlushes().containsKey(cacheName)) {
-            LOG.info("Adding for monitoring cache {}", cacheName);
-            monitor.get().addCache(cacheName);  // it seems silly that we have to do this?
-        }
-    }
 
     @Override
     public Iterable<String> getCacheNames() {
