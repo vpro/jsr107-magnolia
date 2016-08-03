@@ -42,14 +42,14 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public V get(K key) {
-        return (V) mgnlCache.get(key);
+        return ((CacheValue<V>) mgnlCache.get(key)).orNull();
     }
 
     @Override
     public Map<K, V> getAll(Set<? extends K> keys) {
         Map<K, V> result = new HashMap<>();
         for (K k : keys) {
-            result.put(k, (V) mgnlCache.get(k));
+            result.put(k, ((CacheValue<V>) mgnlCache.get(k)).orNull());
         }
         return result;
     }
@@ -67,26 +67,26 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public void put(K key, V value) {
-        mgnlCache.put(key, value);
+        mgnlCache.put(key, new CacheValue<>(value));
     }
 
     @Override
     public V getAndPut(K key, V value) {
-        mgnlCache.put(key, value);
+        mgnlCache.put(key, new CacheValue<>(value));
         return value;
     }
 
     @Override
     public void putAll(Map<? extends K, ? extends V> map) {
         for (Map.Entry<? extends K, ? extends V> e : map.entrySet()) {
-            mgnlCache.put(e.getKey(), e.getValue());
+            mgnlCache.put(e.getKey(), new CacheValue<>(e.getValue()));
         }
     }
 
     @Override
     public boolean putIfAbsent(K key, V value) {
         if (! mgnlCache.hasElement(key)) {
-            mgnlCache.put(key, value);
+            mgnlCache.put(key, new CacheValue<>(value));
             return true;
         } else {
             return false;
@@ -104,7 +104,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public boolean remove(K key, V oldValue) {
-        V compare = (V) mgnlCache.get(key);
+        V compare = get(key);
         if (compare != null && compare.equals(oldValue)) {
             mgnlCache.remove(key);
             return true;
@@ -123,7 +123,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public boolean replace(K key, V oldValue, V newValue) {
-        V compare = (V) mgnlCache.get(key);
+        V compare = get(key);
         if (compare != null && compare.equals(oldValue)) {
             mgnlCache.put(key, newValue);
             return true;
@@ -145,8 +145,8 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     @Override
     public V getAndReplace(K key, V value) {
         if (mgnlCache.hasElement(key)) {
-            V oldValue = (V) mgnlCache.get(key);
-            mgnlCache.put(key, value);
+            V oldValue = get(key);
+            put(key, value);
             return oldValue;
         }
         return null;
