@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.Optional;
 
 /**
- * Makes it possible to store null's in mangolia caches. Also makes it possible to store Optional's (while remaining Serializable)
+ * Makes it possible to store null's in magnolia caches. Also makes it possible to store Optional's (while remaining Serializable)
  * @author Michiel Meeuwissen
  * @since 1.2
  */
