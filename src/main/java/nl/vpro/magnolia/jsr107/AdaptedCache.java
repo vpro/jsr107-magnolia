@@ -42,14 +42,19 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public V get(K key) {
-        return ((CacheValue<V>) mgnlCache.get(key)).orNull();
+        CacheValue<V> cacheValue = ((CacheValue<V>) mgnlCache.get(key));
+        if (cacheValue == null) {
+            // Not present in cache
+            return null;
+        }
+        return cacheValue.orNull();
     }
 
     @Override
     public Map<K, V> getAll(Set<? extends K> keys) {
         Map<K, V> result = new HashMap<>();
         for (K k : keys) {
-            result.put(k, ((CacheValue<V>) mgnlCache.get(k)).orNull());
+            result.put(k, get(k));
         }
         return result;
     }
