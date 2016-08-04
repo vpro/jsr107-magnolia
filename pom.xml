@@ -34,7 +34,6 @@
     <connection>scm:git:git://git@github.com/vpro/jsr107-magnolia.git</connection>
     <developerConnection>scm:git:git@github.com:vpro/jsr107-magnolia.git</developerConnection>
     <url>https://github.com/vpro/jsr107-magnolia</url>
-    <tag>1.1</tag>
   </scm>
 
 
