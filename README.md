@@ -16,10 +16,13 @@ public List<Map.Entry<Movie, Set<RoleType>>> sortedMovies(Person person) {
 
 In this case in the magnolia cache configuration automaticly a cache 'CinemaUtil-sortedMovies' will appear.
 
-## Notes
-The cache values may be null and Optional. This implementation will arrange that no nulls are stored in the underlying magnolia cache. If the value is optional, the value of the optional will be serialized.
+## Possible cache values
+The cache values may be `null` and `Optional`. This implementation will arrange that no nulls are stored in the underlying magnolia cache. If the value is `Optional`, the value of the `Optional' will be serialized.
 
-Note: Sadly, [model classes are not instantiated by guice, but by Magnolia itself](https://jira.magnolia-cms.com/browse/MAGNOLIA-6601), so they cannot be proxied by guice.
+Non serializable values are only possible if the underlying eh-cache is configured not to store to disk.
+
+## Model classes
+Sadly, [model classes are not instantiated by guice, but by Magnolia itself](https://jira.magnolia-cms.com/browse/MAGNOLIA-6601), so they cannot be proxied by guice.
 
 
 ##Installation
