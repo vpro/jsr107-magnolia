@@ -17,6 +17,8 @@ import javax.cache.processor.EntryProcessorResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static nl.vpro.magnolia.jsr107.CacheValue.of;
+
 /**
  * @author Michiel Meeuwissen
  * @since 1.0
@@ -72,26 +74,26 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public void put(K key, V value) {
-        mgnlCache.put(key, new CacheValue<>(value));
+        mgnlCache.put(key, of(value));
     }
 
     @Override
     public V getAndPut(K key, V value) {
-        mgnlCache.put(key, new CacheValue<>(value));
+        mgnlCache.put(key, of(value));
         return value;
     }
 
     @Override
     public void putAll(Map<? extends K, ? extends V> map) {
         for (Map.Entry<? extends K, ? extends V> e : map.entrySet()) {
-            mgnlCache.put(e.getKey(), new CacheValue<>(e.getValue()));
+            mgnlCache.put(e.getKey(), of(e.getValue()));
         }
     }
 
     @Override
     public boolean putIfAbsent(K key, V value) {
         if (! mgnlCache.hasElement(key)) {
-            mgnlCache.put(key, new CacheValue<>(value));
+            mgnlCache.put(key, of(value));
             return true;
         } else {
             return false;
@@ -130,7 +132,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     public boolean replace(K key, V oldValue, V newValue) {
         V compare = get(key);
         if (compare != null && compare.equals(oldValue)) {
-            mgnlCache.put(key, newValue);
+            mgnlCache.put(key, of(newValue));
             return true;
         }
         return false;
@@ -141,7 +143,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     public boolean replace(K key, V value) {
         boolean result = mgnlCache.hasElement(key);
         if (result) {
-            mgnlCache.put(key, value);
+            mgnlCache.put(key, of(value));
             return true;
         }
         return false;
