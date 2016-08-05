@@ -56,7 +56,9 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     public Map<K, V> getAll(Set<? extends K> keys) {
         Map<K, V> result = new HashMap<>();
         for (K k : keys) {
-            result.put(k, get(k));
+            if (containsKey(k)) {
+                result.put(k, get(k));
+            }
         }
         return result;
     }
@@ -69,6 +71,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
     @Override
     public void loadAll(Set<? extends K> keys, boolean replaceExistingValues, CompletionListener completionListener) {
         LOG.debug("loading ", keys);
+        throw new UnsupportedOperationException();
 
     }
 
@@ -79,8 +82,9 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public V getAndPut(K key, V value) {
+        V previousValue = get(key);
         mgnlCache.put(key, of(value));
-        return value;
+        return previousValue;
     }
 
     @Override

@@ -3,8 +3,9 @@ package nl.vpro.magnolia.jsr107.mock;
 import info.magnolia.module.cache.Cache;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+
 
 /**
  * A mock Magnolia Cache implementations
@@ -12,7 +13,7 @@ import java.util.Map;
  * @since 1.0
  */
 public class MockCache implements Cache  {
-    private final Map<Object, Object> backing = new HashMap<>();
+    private final Map<Object, Object> backing = new LinkedHashMap<>();
 
     private final String name;
 
