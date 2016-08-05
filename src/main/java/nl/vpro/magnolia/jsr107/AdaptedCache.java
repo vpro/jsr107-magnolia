@@ -221,7 +221,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public <T> T unwrap(Class<T> clazz) {
-        if (mgnlCache.getClass().isAssignableFrom(clazz)) {
+        if (clazz.isAssignableFrom(mgnlCache.getClass())) {
             return (T) mgnlCache;
         }
         throw new IllegalArgumentException();

@@ -61,7 +61,7 @@ public class AdaptedCacheTest {
 
 	@Test
 	public void loadAll() throws Exception {
-
+        // Not supported.
 	}
 
 	@Test
@@ -215,5 +215,22 @@ public class AdaptedCacheTest {
         assertThat(i.hasNext()).isFalse();
 
 	}
+
+
+	@Test
+    public void unwrap() {
+	    assertThat(cache.unwrap(info.magnolia.module.cache.Cache.class)).isInstanceOf(MockCache.class);
+    }
+
+    @Test
+    public void registerCacheEntryListener() {
+        // UnsupportedOperationException(
+
+    }
+
+    @Test
+    public void deregisterCacheEntryListener() {
+        // unsupported
+    }
 
 }
