@@ -34,7 +34,7 @@ Or you can add this to your pom.xml
 <dependency>
   <groupId>nl.vpro</groupId>
   <artifactId>jsr107-magnolia</artifactId>
-  <version>1.2</version>
+  <version>1.3</version>
 </dependency>
 ```
 ###Configuration
