@@ -32,6 +32,11 @@ public class CreateConfigurationTasks {
 
     private static final String PATH = "/modules/cache/config/cacheFactory/caches";
 
+    /**
+     * Generates tasks to create (default) configuration for the caches provided by a list of beans.
+     * The values used are the ones in the annotation {@link DefaultCacheSettings}. You can set this annotation on your methods to provide different defaults.
+     * If the annotation is missing altogether the defaults of it are still used.
+     */
     public static List<Task> createConfigurationTasks(Class<?>... beans) {
         List<Task> result = new ArrayList<>();
         for (Class<?> bean : beans) {
