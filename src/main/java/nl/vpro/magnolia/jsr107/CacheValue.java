@@ -33,6 +33,7 @@ class CacheValue<V> implements Serializable {
     }
 
 
+    @SuppressWarnings("unchecked")
     private void writeObject(ObjectOutputStream out) throws IOException {
         if (value instanceof Optional) {
             out.writeObject(Optional.class);
@@ -42,6 +43,7 @@ class CacheValue<V> implements Serializable {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         Object i = in.readObject();
         if (Optional.class.equals(i)) {
