@@ -154,8 +154,8 @@
   <properties>
     <jcr.version>2.0</jcr.version>
     <slf4j.version>1.7.13</slf4j.version>
-    <magnolia.version>5.4.5</magnolia.version>
-    <magnolia.cache.version>5.4.4</magnolia.cache.version>
+    <magnolia.version>5.4.8</magnolia.version>
+    <magnolia.cache.version>5.4.5</magnolia.cache.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
