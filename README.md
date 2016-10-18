@@ -34,10 +34,27 @@ Or you can add this to your pom.xml
 <dependency>
   <groupId>nl.vpro</groupId>
   <artifactId>jsr107-magnolia</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
 </dependency>
 ```
 ###Configuration
 You can configure the create cache like so in the JCR-tree:
 ![cache configuration](cache-config.png?raw=true "Cache configuration")
+
+Cache-configurations can be automaticly created like this using tasks on the version handler of your module.
+E.g.
+```java
+@Slf4j
+public class CinemaVersionHandler extends DefaultModuleVersionHandler {
+ 
+    @Override
+    protected List<Task> getBasicInstallTasks(InstallContext installContext) {
+        List<Task> tasks = super.getBasicInstallTasks(installContext);
+        tasks.addAll(CreateConfigurationTasks.createConfigurationTasks(CinemaUtilWithCaching.class));
+        log.info("Created tasks {}", tasks);
+        return tasks;
+    }
+}
+```
+
 
