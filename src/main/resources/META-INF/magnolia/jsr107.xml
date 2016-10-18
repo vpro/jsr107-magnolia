@@ -2,8 +2,8 @@
 <!DOCTYPE module SYSTEM "module.dtd">
 <module>
   <name>jsr107</name>
-  <displayName>Provides jsrc 107 cache annotations</displayName>
-  <version>1.3</version>
+  <displayName>Provides jsr 107 cache annotations</displayName>
+  <version>1.4</version>
   <components>
     <id>main</id>
     <configurer>
