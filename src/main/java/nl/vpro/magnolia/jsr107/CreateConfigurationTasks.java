@@ -1,6 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.jcr.util.NodeTypes;
+import info.magnolia.jcr.util.PropertyUtil;
 import info.magnolia.module.InstallContext;
 import info.magnolia.module.delta.AbstractRepositoryTask;
 import info.magnolia.module.delta.Task;
@@ -96,15 +97,7 @@ public class CreateConfigurationTasks {
                     o = property.getDefaultValue();
                 }
                 if (o != null) {
-                    if (o instanceof Boolean) {
-                        node.setProperty(property.getName(), (Boolean) o);
-                    } else if (o instanceof String) {
-                        node.setProperty(property.getName(), (String) o);
-                    } else if (o instanceof Integer) {
-                        node.setProperty(property.getName(), (Integer) o);
-                    } else {
-                        throw new UnsupportedOperationException();
-                    }
+                    PropertyUtil.setProperty(node, property.getName(), o);
                 }
             } catch (IllegalAccessException | InvocationTargetException | RepositoryException e) {
                 LOG.error(e.getMessage(), e);
