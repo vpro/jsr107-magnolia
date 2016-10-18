@@ -12,7 +12,7 @@ import java.util.Optional;
  * @since 1.2
  */
 class CacheValue<V> implements Serializable {
-    
+
     static <V> CacheValue<V> of(V value) {
         return new CacheValue<>(value);
     }
