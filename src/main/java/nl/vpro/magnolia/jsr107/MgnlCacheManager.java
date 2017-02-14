@@ -2,27 +2,30 @@ package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.module.cache.CacheFactory;
 import info.magnolia.module.cache.inject.CacheFactoryProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+
+import java.net.URI;
+import java.util.Properties;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.Configuration;
 import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
-import java.net.URI;
-import java.util.Properties;
 
 /**
  * @author Michiel Meeuwissen
  * @since 1.0
  */
+@Slf4j
 public class MgnlCacheManager implements CacheManager {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MgnlCacheManager.class);
+    private final CacheFactoryProvider factory;
 
     @Inject
-    private CacheFactoryProvider factory;
+    public MgnlCacheManager(CacheFactoryProvider factory) {
+        this.factory = factory;
+    }
 
     private CacheFactory get() {
         return factory.get();
@@ -56,7 +59,7 @@ public class MgnlCacheManager implements CacheManager {
 
     @Override
     public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String cacheName, C configuration) throws IllegalArgumentException {
-        LOG.info("Creating cache {}", cacheName);
+        log.info("Creating cache {}", cacheName);
         info.magnolia.module.cache.Cache mgnlCache = get().getCache(cacheName);
         return new AdaptedCache<>(mgnlCache, this, configuration);
 
@@ -70,7 +73,7 @@ public class MgnlCacheManager implements CacheManager {
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
         if (get().getCacheNames().contains(cacheName)) {
-            LOG.debug("Getting cache {}", cacheName);
+            log.debug("Getting cache {}", cacheName);
             return new AdaptedCache<>(get().getCache(cacheName), this, new MgnlCacheConfiguration());
         }
         return createCache(cacheName, null);

@@ -7,6 +7,7 @@ import info.magnolia.module.delta.AbstractRepositoryTask;
 import info.magnolia.module.delta.Task;
 import info.magnolia.module.delta.TaskExecutionException;
 import info.magnolia.repository.RepositoryConstants;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,17 +20,13 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * @author Michiel Meeuwissen
  * @since 1.4
  */
+
+@Slf4j
 public class CreateConfigurationTasks {
-
-    private static final Logger LOG = LoggerFactory.getLogger(CreateConfigurationTasks.class);
-
 
     private static final String PATH = "/modules/cache/config/cacheFactory/caches";
 
@@ -80,9 +77,9 @@ public class CreateConfigurationTasks {
                 for (Method m : DefaultCacheSettings.class.getMethods()) {
                     setPropertyOrDefault(node, cacheSettings, m);
                 }
-                LOG.info("Created {}", node);
+                CreateConfigurationTasks.log.info("Created {}", node);
             } else {
-                LOG.info("Already existed {}", node);
+                CreateConfigurationTasks.log.info("Already existed {}", node);
             }
             session.save();
 
@@ -100,7 +97,7 @@ public class CreateConfigurationTasks {
                     PropertyUtil.setProperty(node, property.getName(), o);
                 }
             } catch (IllegalAccessException | InvocationTargetException | RepositoryException e) {
-                LOG.error(e.getMessage(), e);
+                CreateConfigurationTasks.log.error(e.getMessage(), e);
             }
 
         }

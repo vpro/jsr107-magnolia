@@ -15,8 +15,12 @@ import javax.inject.Provider;
 public class MgnlCacheResolver implements CacheResolver {
 
 
+    private final Provider<MgnlCacheManager> cacheManager;
+
     @Inject
-    Provider<MgnlCacheManager> cacheManager;
+    public MgnlCacheResolver(Provider<MgnlCacheManager> cacheManager) {
+        this.cacheManager = cacheManager;
+    }
 
     @Override
     public <K, V> Cache<K, V> resolveCache(CacheInvocationContext<? extends Annotation> cacheInvocationContext) {

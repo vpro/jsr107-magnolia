@@ -3,6 +3,7 @@ package nl.vpro.magnolia.jsr107;
 import info.magnolia.objectfactory.ComponentProvider;
 import info.magnolia.objectfactory.configuration.ComponentConfigurer;
 import info.magnolia.objectfactory.configuration.ComponentProviderConfiguration;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.cache.CacheManager;
 import javax.cache.annotation.*;
@@ -11,8 +12,6 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.jsr107.ri.annotations.CacheContextSource;
 import org.jsr107.ri.annotations.DefaultCacheKeyGenerator;
 import org.jsr107.ri.annotations.guice.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
@@ -22,16 +21,15 @@ import com.google.inject.matcher.Matchers;
  * @author Michiel Meeuwissen
  * @since 1.0
  */
+@Slf4j
 public class CacheConfigurer extends AbstractModule implements ComponentConfigurer {
 
-    private static Logger LOG = LoggerFactory.getLogger(CacheConfigurer.class);
 
     @Override
     protected void configure() {
         bind(CacheKeyGenerator.class).to(DefaultCacheKeyGenerator.class);
-        bind(MgnlCacheResolver.class).toInstance(new MgnlCacheResolver());
-        MgnlCacheResolverFactory factory = new MgnlCacheResolverFactory();
-        bind(CacheResolverFactory.class).toInstance(factory);
+        requireBinding(MgnlCacheResolver.class);
+        bind(CacheResolverFactory.class).to(MgnlCacheResolverFactory.class);
         bind(CacheManager.class).to(MgnlCacheManager.class);
 
         bind(new TypeLiteral<CacheContextSource<MethodInvocation>>() {
@@ -61,7 +59,7 @@ public class CacheConfigurer extends AbstractModule implements ComponentConfigur
 
     @Override
     public void doWithConfiguration(ComponentProvider parentComponentProvider, ComponentProviderConfiguration configuration) {
-        LOG.info("Installing JSR 107 caching by annotation");
+        log.info("Installing JSR 107 caching by annotation");
     }
 
 

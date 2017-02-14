@@ -1,5 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -14,18 +16,14 @@ import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import static nl.vpro.magnolia.jsr107.CacheValue.of;
 
 /**
  * @author Michiel Meeuwissen
  * @since 1.0
  */
+@Slf4j
 public class AdaptedCache<K, V> implements Cache<K, V> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AdaptedCache.class);
 
     private final info.magnolia.module.cache.Cache mgnlCache;
     private final CacheManager cacheManager;
@@ -70,7 +68,7 @@ public class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public void loadAll(Set<? extends K> keys, boolean replaceExistingValues, CompletionListener completionListener) {
-        LOG.debug("loading ", keys);
+        log.debug("loading ", keys);
         throw new UnsupportedOperationException();
 
     }

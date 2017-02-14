@@ -14,8 +14,12 @@ import javax.inject.Inject;
  */
 public class MgnlCacheResolverFactory implements CacheResolverFactory {
 
+    private final MgnlCacheResolver resolver;
+
     @Inject
-    MgnlCacheResolver resolver;
+    public MgnlCacheResolverFactory(MgnlCacheResolver resolver) {
+        this.resolver = resolver;
+    }
 
     @Override
     public CacheResolver getCacheResolver(CacheMethodDetails<? extends Annotation> cacheMethodDetails) {
