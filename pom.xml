@@ -37,6 +37,18 @@
     <tag>HEAD</tag>
   </scm>
 
+  <properties>
+    <jcr.version>2.0</jcr.version>
+    <slf4j.version>1.7.22</slf4j.version>
+    <magnolia.version>5.5.1</magnolia.version>
+    <magnolia.cache.version>5.5.1</magnolia.cache.version>
+    <junit.version>4.12</junit.version>
+    <mockito.version>2.7.0</mockito.version>
+    <lombok.version>1.16.12</lombok.version>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
 
   <build>
     <defaultGoal>install</defaultGoal>
@@ -129,14 +141,14 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.10.19</version>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.4.0</version>
+      <version>3.5.2</version>
     </dependency>
     <dependency>
       <groupId>info.magnolia</groupId>
@@ -149,16 +161,20 @@
       <version>${magnolia.cache.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>info.magnolia.cache</groupId>
+      <artifactId>magnolia-cache-ehcache</artifactId>
+      <version>${magnolia.cache.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
-  <properties>
-    <jcr.version>2.0</jcr.version>
-    <slf4j.version>1.7.13</slf4j.version>
-    <magnolia.version>5.4.8</magnolia.version>
-    <magnolia.cache.version>5.4.5</magnolia.cache.version>
-
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
 
 
   <profiles>
