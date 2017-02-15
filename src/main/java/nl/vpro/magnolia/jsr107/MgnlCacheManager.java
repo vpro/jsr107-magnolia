@@ -22,6 +22,7 @@ public class MgnlCacheManager implements CacheManager {
 
     private final CacheFactoryProvider factory;
 
+
     @Inject
     public MgnlCacheManager(CacheFactoryProvider factory) {
         this.factory = factory;
@@ -72,11 +73,7 @@ public class MgnlCacheManager implements CacheManager {
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
-        if (get().getCacheNames().contains(cacheName)) {
-            log.debug("Getting cache {}", cacheName);
-            return new AdaptedCache<>(get().getCache(cacheName), this, new MgnlCacheConfiguration());
-        }
-        return createCache(cacheName, null);
+        return new AdaptedCache<>(get().getCache(cacheName), this, MgnlCacheConfiguration.INSTANCE);
     }
 
 

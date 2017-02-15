@@ -8,6 +8,8 @@ import javax.cache.configuration.Configuration;
  */
 public class MgnlCacheConfiguration implements Configuration<Object, Object> {
 
+    static final MgnlCacheConfiguration INSTANCE = new MgnlCacheConfiguration();
+
     @Override
     public Class<Object> getKeyType() {
         return Object.class;

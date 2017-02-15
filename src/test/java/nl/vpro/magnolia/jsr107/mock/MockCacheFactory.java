@@ -4,9 +4,9 @@ import info.magnolia.module.cache.Cache;
 import info.magnolia.module.cache.CacheFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A mock Magnolia CacheFactory
@@ -15,13 +15,24 @@ import java.util.Map;
  */
 public class MockCacheFactory implements CacheFactory {
 
-    public final Map<String, Cache> caches = new HashMap<>();
+    public final Map<String, Cache> caches = new ConcurrentHashMap<>();
+
+    private final boolean blocking;
+
+    public MockCacheFactory(boolean blocking) {
+        this.blocking = blocking;
+    }
+
     @Override
     public Cache getCache(String name) {
-        if (! caches.containsKey(name)) {
-            caches.put(name, new MockCache(name));
-        }
-        return caches.get(name);
+
+        return caches.computeIfAbsent(name, (n) -> {
+            if (blocking) {
+                return EHCacheWrapper.create(n);
+            } else {
+                return new MockCache(n);
+            }
+        });
 
     }
 

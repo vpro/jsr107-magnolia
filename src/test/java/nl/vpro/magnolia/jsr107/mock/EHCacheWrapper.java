@@ -3,6 +3,7 @@ package nl.vpro.magnolia.jsr107.mock;
 import info.magnolia.module.cache.BlockingCache;
 import info.magnolia.module.cache.exception.MgnlLockTimeoutException;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.constructs.blocking.LockTimeoutException;
@@ -24,6 +25,18 @@ public class EHCacheWrapper  implements BlockingCache {
         this.name = ehcache.getName();
     }
 
+    public static EHCacheWrapper create(String name) {
+        CacheManager cm = CacheManager.create();
+        Ehcache ehcache = new net.sf.ehcache.Cache(name, 10, false, true, 1000L, 1000L);
+        ;
+        ehcache.setCacheManager(cm);
+        ehcache.initialise();
+
+
+        net.sf.ehcache.constructs.blocking.BlockingCache blockingCache = new net.sf.ehcache.constructs.blocking.BlockingCache(ehcache);
+        blockingCache.setCacheManager(cm);
+        return new EHCacheWrapper(blockingCache);
+    }
 
     @Override
     public Object get(Object key) {

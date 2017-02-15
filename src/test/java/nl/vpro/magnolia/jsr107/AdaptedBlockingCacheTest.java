@@ -1,9 +1,5 @@
 package nl.vpro.magnolia.jsr107;
 
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.constructs.blocking.BlockingCache;
-
 import java.util.*;
 
 import org.junit.Before;
@@ -23,18 +19,7 @@ public class AdaptedBlockingCacheTest {
 
     @Before
 	public void init() {
-        CacheManager cm = CacheManager.create();
-        Ehcache ehcache = new net.sf.ehcache.Cache("test", 10, false, true, 1000L, 1000L);
-        ;
-        ehcache.setCacheManager(cm);
-        ehcache.initialise();
-
-
-        net.sf.ehcache.constructs.blocking.BlockingCache blockingCache = new BlockingCache(ehcache);
-        blockingCache.setCacheManager(cm);
-
-        EHCacheWrapper wrapper = new EHCacheWrapper(blockingCache);
-        cache = new AdaptedCache<>(wrapper, null, null);
+        cache = new AdaptedCache<>(EHCacheWrapper.create("test"), null, null);
 
 
 	}
