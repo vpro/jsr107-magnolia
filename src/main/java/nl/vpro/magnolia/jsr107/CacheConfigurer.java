@@ -42,18 +42,21 @@ public class CacheConfigurer extends AbstractModule implements ComponentConfigur
 
         CacheResultInterceptor cacheResultInterceptor = new CacheResultInterceptor();
         requestInjection(cacheResultInterceptor);
-        bindInterceptor(Matchers.annotatedWith(CacheResult.class), Matchers.any(), cacheResultInterceptor);
-        bindInterceptor(Matchers.any(), Matchers.annotatedWith(CacheResult.class), cacheResultInterceptor);
+        CacheValueInterceptor cacheValueInterceptor = new CacheValueInterceptor();
+        CacheValueUnInterceptor cacheValueUnInterceptor = new CacheValueUnInterceptor();
+        requestInjection(cacheValueInterceptor);
+        bindInterceptor(Matchers.annotatedWith(CacheResult.class), Matchers.any(), cacheValueUnInterceptor, cacheResultInterceptor, cacheValueInterceptor);
+        bindInterceptor(Matchers.any(), Matchers.annotatedWith(CacheResult.class), cacheValueUnInterceptor, cacheResultInterceptor, cacheValueInterceptor);
 
         CacheRemoveEntryInterceptor cacheRemoveEntryInterceptor = new CacheRemoveEntryInterceptor();
         requestInjection(cacheRemoveEntryInterceptor);
-        bindInterceptor(Matchers.annotatedWith(CacheRemove.class), Matchers.any(), cacheRemoveEntryInterceptor);
-        bindInterceptor(Matchers.any(), Matchers.annotatedWith(CacheRemove.class), cacheRemoveEntryInterceptor);
+        bindInterceptor(Matchers.annotatedWith(CacheRemove.class), Matchers.any(), cacheValueInterceptor, cacheRemoveEntryInterceptor, cacheValueUnInterceptor);
+        bindInterceptor(Matchers.any(), Matchers.annotatedWith(CacheRemove.class), cacheValueInterceptor, cacheRemoveEntryInterceptor, cacheValueUnInterceptor);
 
         CacheRemoveAllInterceptor cacheRemoveAllInterceptor = new CacheRemoveAllInterceptor();
         requestInjection(cacheRemoveAllInterceptor);
-        bindInterceptor(Matchers.annotatedWith(CacheRemoveAll.class), Matchers.any(), cacheRemoveAllInterceptor);
-        bindInterceptor(Matchers.any(), Matchers.annotatedWith(CacheRemoveAll.class), cacheRemoveAllInterceptor);
+        bindInterceptor(Matchers.annotatedWith(CacheRemoveAll.class), Matchers.any(), cacheValueInterceptor, cacheRemoveAllInterceptor, cacheValueUnInterceptor);
+        bindInterceptor(Matchers.any(), Matchers.annotatedWith(CacheRemoveAll.class), cacheValueInterceptor, cacheRemoveAllInterceptor, cacheValueUnInterceptor);
 
     }
 

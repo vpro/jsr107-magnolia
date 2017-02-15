@@ -74,7 +74,7 @@ public class CreateConfigurationTasks {
             }
             if (node == null) {
                 node = session.getNode(PATH).addNode(nodeName, NodeTypes.Content.NAME);
-                for (Method m : DefaultCacheSettings.class.getMethods()) {
+                for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
                     setPropertyOrDefault(node, cacheSettings, m);
                 }
                 CreateConfigurationTasks.log.info("Created {}", node);
@@ -96,8 +96,8 @@ public class CreateConfigurationTasks {
                 if (o != null) {
                     PropertyUtil.setProperty(node, property.getName(), o);
                 }
-            } catch (IllegalAccessException | InvocationTargetException | RepositoryException e) {
-                CreateConfigurationTasks.log.error(e.getMessage(), e);
+            } catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException | RepositoryException e) {
+                CreateConfigurationTasks.log.error("For " + property + " of " + cacheSettings + " to set on " + node + " :" + e.getMessage(), e);
             }
 
         }

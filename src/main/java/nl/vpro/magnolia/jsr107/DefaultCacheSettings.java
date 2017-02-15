@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * This annotation can be added next to the @CacheResult to specify default for the {@link nl.vpro.magnolia.jsr107.CreateConfigurationTasks}
  * @author Michiel Meeuwissen
  * @since 1.4
  */
@@ -23,4 +24,5 @@ public @interface DefaultCacheSettings {
     int timeToLiveSeconds() default 300;
     int diskExpiryThreadIntervalSeconds() default 3600;
     int diskSpoolBufferSizeMB() default 50;
+    int blockingTimeout() default 10000;
 }
