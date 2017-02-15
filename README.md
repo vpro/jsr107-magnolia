@@ -57,5 +57,15 @@ public class CinemaVersionHandler extends DefaultModuleVersionHandler {
     }
 }
 ```
+Default settings could be configured using the `nl.vpro.magnolia.jsr107.DefaultCacheSettings` annotation:
+```java
+    @CacheResult(cacheName = "CinemaUtil-scheduleForChannel")
+    @DefaultCacheSettings(blockingTimeout = 30000)
+    List<ScheduleItem> scheduleForChannel(String channel, LocalDate date) {
+        log.info("Getting movies for  {} {}", channel, date);
+        MediaSearch search = new MediaSearch();
+        ....
+        
+     ```
 
 
