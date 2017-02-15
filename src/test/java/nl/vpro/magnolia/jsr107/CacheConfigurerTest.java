@@ -17,6 +17,7 @@ import com.google.inject.Injector;
 import nl.vpro.magnolia.jsr107.mock.MockCacheFactory;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +44,21 @@ public class CacheConfigurerTest {
         @CacheResult(cacheName = "constants", cacheKeyGenerator = MethodKey.class)
         public int constant() {
             return constant++;
+        }
+
+        @CacheResult(cacheName = "exception", cacheKeyGenerator = MethodKey.class)
+        public int exception() {
+            if (count++ % 2 == 0) {
+                throw new RuntimeException();
+            } else {
+                return 1;
+            }
+        }
+
+        @CacheResult(cacheName = "null", cacheKeyGenerator = MethodKey.class)
+        public String nulls() {
+            return count++ % 2 == 0 ? null : "string";
+
         }
     }
     TestClass instance;
@@ -74,6 +90,17 @@ public class CacheConfigurerTest {
         cacheManager.getCache("counts").clear();
         assertEquals(1, instance.getCachedCount("a"));
         assertEquals(2, instance.getCachedCount("b"));
+    }
+
+
+    @Test
+    public void testNulls() {
+        assertNull(instance.nulls());
+        assertNull(instance.nulls());
+        cacheManager.getCache("null").clear();
+        assertEquals("string", instance.nulls());
+        cacheManager.getCache("null").clear();
+        assertNull(instance.nulls());
     }
 
     @Test
