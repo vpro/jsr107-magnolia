@@ -138,6 +138,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         V compare = get(key);
         if (compare != null && compare.equals(oldValue)) {
             mgnlCache.put(key, newValue);
+            return true;
         }
         return false;
 

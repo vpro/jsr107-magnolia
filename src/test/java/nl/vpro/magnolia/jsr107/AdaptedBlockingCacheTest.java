@@ -54,7 +54,7 @@ public class AdaptedBlockingCacheTest {
 
         assertThat(cache.getAll(new HashSet<>(Arrays.asList("bla")))).containsOnly(new AbstractMap.SimpleEntry<>("bla", "foo"));
         assertThat(cache.getAll(new HashSet<>(Arrays.asList("bla", "bloe", "blie")))).containsOnly(new AbstractMap.SimpleEntry<>("bla", "foo"), new AbstractMap.SimpleEntry<>("bloe", "bar"));
-        assertThat(cache.getAll(new HashSet<>(Arrays.asList("bla", "bloe", "null")))).containsOnly(new AbstractMap.SimpleEntry<>("bla", "foo"), new AbstractMap.SimpleEntry<>("bloe", "bar"), new AbstractMap.SimpleEntry<>("null", null));
+        assertThat(cache.getAll(new HashSet<>(Arrays.asList("bla", "bloe", "null")))).containsOnly(new AbstractMap.SimpleEntry<>("bla", "foo"), new AbstractMap.SimpleEntry<>("bloe", "bar"));
 	}
 
 	@Test
@@ -65,7 +65,7 @@ public class AdaptedBlockingCacheTest {
 
         assertThat(cache.containsKey("bla")).isTrue();
         assertThat(cache.containsKey("bloe")).isFalse();
-        assertThat(cache.containsKey("null")).isTrue();
+        assertThat(cache.containsKey("null")).isFalse(); // ehcache don't contain nulls
 	}
 
 	@Test
@@ -175,7 +175,7 @@ public class AdaptedBlockingCacheTest {
         cache.put("bla", "foo");
         cache.put("blie", "bar");
         cache.put("null", null);
-        assertThat(cache).hasSize(3);
+        assertThat(cache).hasSize(2);
         cache.removeAll();
         assertThat(cache).isEmpty();
 
@@ -187,17 +187,16 @@ public class AdaptedBlockingCacheTest {
         cache.put("blie", "bar");
         cache.put("null", null);
 
-        assertThat(cache).hasSize(3);
-        cache.removeAll(new HashSet<>(Arrays.asList("bla")));
         assertThat(cache).hasSize(2);
+        cache.removeAll(new HashSet<>(Arrays.asList("bla")));
+        assertThat(cache).hasSize(1);
 	}
 
 	@Test
 	public void clear() throws Exception {
         cache.put("bla", "foo");
         cache.put("blie", "bar");
-        cache.put("null", null);
-        assertThat(cache).hasSize(3);
+        assertThat(cache).hasSize(2);
         cache.clear();
         assertThat(cache).isEmpty();
 	}
