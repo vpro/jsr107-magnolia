@@ -109,7 +109,7 @@ public class CacheConfigurerTest {
         }
         for (int i = 0; i < max; i++) {
             threads[i].join();
-            assertEquals(0, results[i]); // Fails
+            assertEquals(0, results[i]);
         }
     }
 
