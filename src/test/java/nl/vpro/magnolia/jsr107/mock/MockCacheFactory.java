@@ -2,6 +2,7 @@ package nl.vpro.magnolia.jsr107.mock;
 
 import info.magnolia.module.cache.Cache;
 import info.magnolia.module.cache.CacheFactory;
+import net.sf.ehcache.CacheManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +20,12 @@ public class MockCacheFactory implements CacheFactory {
 
     private final boolean blocking;
 
+    CacheManager cm = CacheManager.create();
+
+
     public MockCacheFactory(boolean blocking) {
         this.blocking = blocking;
+        cm.clearAll();
     }
 
     @Override
@@ -28,7 +33,10 @@ public class MockCacheFactory implements CacheFactory {
 
         return caches.computeIfAbsent(name, (n) -> {
             if (blocking) {
-                return EHCacheWrapper.create(n);
+                if (cm.getCache(name) == null) {
+                    cm.addCache(name);
+                }
+                return EHCacheWrapper.getCache(cm.getCache(name));
             } else {
                 return new MockCache(n);
             }

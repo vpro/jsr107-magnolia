@@ -10,14 +10,17 @@ import org.aopalliance.intercept.MethodInvocation;
  * @since 1.5
  */
 @Slf4j
-class CacheValueInterceptor implements  MethodInterceptor {
+class ReturnCacheValueInterceptor implements  MethodInterceptor {
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
         try {
             return CacheValue.of(invocation.proceed());
+        } catch(RuntimeException e) {
+            log.error(e.getMessage(), e);
+            return CacheValue.of(e);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return CacheValue.of(new RuntimeException(e));
+            return CacheValue.of(new RuntimeException(e.getMessage(), e));
         }
     }
 }

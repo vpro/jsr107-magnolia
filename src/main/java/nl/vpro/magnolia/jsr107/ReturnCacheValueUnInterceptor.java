@@ -7,7 +7,7 @@ import org.aopalliance.intercept.MethodInvocation;
  * @author Michiel Meeuwissen
  * @since 1.5
  */
-class CacheValueUnInterceptor implements  MethodInterceptor {
+class ReturnCacheValueUnInterceptor implements  MethodInterceptor {
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
         CacheValue v = (CacheValue) invocation.proceed();

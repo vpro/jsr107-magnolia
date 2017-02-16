@@ -24,5 +24,9 @@ public @interface DefaultCacheSettings {
     int timeToLiveSeconds() default 300;
     int diskExpiryThreadIntervalSeconds() default 3600;
     int diskSpoolBufferSizeMB() default 50;
+
+    /**
+     * This is a ehcache setting. It seems not to work?
+     */
     int blockingTimeout() default 10000;
 }

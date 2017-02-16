@@ -5,7 +5,7 @@ import java.util.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.vpro.magnolia.jsr107.mock.EHCacheWrapper;
+import nl.vpro.magnolia.jsr107.mock.MockCacheFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,7 +19,7 @@ public class AdaptedBlockingCacheTest {
 
     @Before
 	public void init() {
-        cache = new AdaptedCache<>(EHCacheWrapper.create("test"), null, null);
+        cache = new AdaptedCache<>(new MockCacheFactory(true).getCache("test"), null, null);
 
 
 	}

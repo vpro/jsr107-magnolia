@@ -5,9 +5,12 @@ import info.magnolia.module.cache.inject.CacheFactoryProvider;
 import info.magnolia.module.cache.mbean.CacheMonitor;
 
 import javax.cache.CacheManager;
+import javax.cache.annotation.CacheKey;
+import javax.cache.annotation.CachePut;
 import javax.cache.annotation.CacheResult;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.AbstractModule;
@@ -16,8 +19,7 @@ import com.google.inject.Injector;
 
 import nl.vpro.magnolia.jsr107.mock.MockCacheFactory;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +43,12 @@ public class CacheConfigurerTest {
             }
             return count++;
         }
+        @CachePut(cacheName = "counts")
+        public void setCachedCount(
+            @CacheKey String key,
+            @javax.cache.annotation.CacheValue  int count) {
+
+        }
         @CacheResult(cacheName = "constants", cacheKeyGenerator = MethodKey.class)
         public int constant() {
             return constant++;
@@ -49,9 +57,9 @@ public class CacheConfigurerTest {
         @CacheResult(cacheName = "exception", cacheKeyGenerator = MethodKey.class)
         public int exception() {
             if (count++ % 2 == 0) {
-                throw new RuntimeException();
+                throw new RuntimeException("bla" + count);
             } else {
-                return 1;
+                return count;
             }
         }
 
@@ -94,6 +102,13 @@ public class CacheConfigurerTest {
 
 
     @Test
+    @Ignore("Failing.")
+    public void testCachePut() {
+        instance.setCachedCount("a", 10);
+        assertEquals(10, instance.getCachedCount("a"));
+    }
+
+    @Test
     public void testNulls() {
         assertNull(instance.nulls());
         assertNull(instance.nulls());
@@ -103,6 +118,36 @@ public class CacheConfigurerTest {
         assertNull(instance.nulls());
     }
 
+
+    @Test
+    public void testExceptions() {
+        try {
+            instance.exception();
+            fail();
+        } catch (RuntimeException rt) {
+            assertEquals("bla1", rt.getMessage());
+        }
+        try {
+            instance.exception();
+            fail();
+        } catch (RuntimeException rt) {
+            assertEquals("bla1", rt.getMessage());
+        }
+        cacheManager.getCache("exception").clear();
+
+        assertEquals(2, instance.exception());
+        assertEquals(2, instance.exception());
+
+        cacheManager.getCache("exception").clear();
+
+        try {
+            instance.exception();
+            fail();
+        } catch (RuntimeException rt) {
+            assertEquals("bla3", rt.getMessage());
+        }
+
+    }
     @Test
     public void testUnwrap() {
         assertEquals(MockCacheFactory.class, cacheManager.unwrap(CacheFactory.class).getClass());
@@ -121,6 +166,7 @@ public class CacheConfigurerTest {
     // https://groups.google.com/forum/m/?fromgroups#!topic/spring-framework-contrib/bVjdVHhZci8
     @Test
     public void testConcurrency() throws InterruptedException {
+        int expected = 0;
         int max = 10;
         Thread[] threads = new Thread[max];
         int[] results = new int[max];
@@ -136,7 +182,7 @@ public class CacheConfigurerTest {
         }
         for (int i = 0; i < max; i++) {
             threads[i].join();
-            assertEquals(0, results[i]);
+            assertEquals(expected, results[i]);
         }
     }
 

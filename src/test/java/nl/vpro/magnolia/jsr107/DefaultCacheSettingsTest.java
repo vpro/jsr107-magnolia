@@ -6,7 +6,7 @@ import org.junit.Test;
 
 /**
  * @author Michiel Meeuwissen
- * @since ...
+ * @since 1.5
  */
 public class DefaultCacheSettingsTest {
 
