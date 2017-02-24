@@ -4,7 +4,7 @@
   <groupId>nl.vpro</groupId>
   <artifactId>jsr107-magnolia</artifactId>
   <name>JSR107-Magnolia</name>
-  <version>1.5-SNAPSHOT</version>
+  <version>1.6-SNAPSHOT</version>
   <inceptionYear>2016</inceptionYear>
   <description>JSR-17 caching for the Magnolia CMS</description>
   <url>https://github.com/vpro/jsr107-magnolia</url>
@@ -40,8 +40,8 @@
   <properties>
     <jcr.version>2.0</jcr.version>
     <slf4j.version>1.7.22</slf4j.version>
-    <magnolia.version>5.5.1</magnolia.version>
-    <magnolia.cache.version>5.5.1</magnolia.cache.version>
+    <magnolia.version>5.5.2</magnolia.version>
+    <magnolia.cache.version>5.5.2</magnolia.cache.version>
     <junit.version>4.12</junit.version>
     <mockito.version>2.7.0</mockito.version>
     <lombok.version>1.16.12</lombok.version>
