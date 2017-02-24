@@ -11,10 +11,10 @@ import org.jsr107.ri.annotations.DefaultGeneratedCacheKey;
 /**
  * This Cache Key Generator can be used on a method without arguments.
  * <pre>
- @CacheResult(cacheName = "constants", cacheKeyGenerator = nl.vpro.magnolia.jsr107.MethodKey.class)
+ {@literal @}CacheResult(cacheName = "constants", cacheKeyGenerator = nl.vpro.magnolia.jsr107.MethodKey.class)
    public Site getSite() {
        ...
- * </pre>
+}</pre>
  * @author Michiel Meeuwissen
  * @since 1.1
  */

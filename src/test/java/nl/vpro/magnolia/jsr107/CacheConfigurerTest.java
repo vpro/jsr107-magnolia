@@ -54,7 +54,10 @@ public class CacheConfigurerTest {
             return constant++;
         }
 
-        @CacheResult(cacheName = "exception", cacheKeyGenerator = MethodKey.class)
+        @CacheResult(
+            cacheName = "exception",
+            exceptionCacheName = "exception.exception",
+            cacheKeyGenerator = MethodKey.class)
         public int exception() {
             if (count++ % 2 == 0) {
                 throw new RuntimeException("bla" + count);
@@ -133,7 +136,7 @@ public class CacheConfigurerTest {
         } catch (RuntimeException rt) {
             assertEquals("bla1", rt.getMessage());
         }
-        cacheManager.getCache("exception").clear();
+        cacheManager.getCache("exception.exception").clear();
 
         assertEquals(2, instance.exception());
         assertEquals(2, instance.exception());

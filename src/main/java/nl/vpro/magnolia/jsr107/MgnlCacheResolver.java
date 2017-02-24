@@ -5,25 +5,31 @@ import java.lang.annotation.Annotation;
 import javax.cache.Cache;
 import javax.cache.annotation.CacheInvocationContext;
 import javax.cache.annotation.CacheResolver;
-import javax.inject.Inject;
+import javax.cache.annotation.CacheResult;
 import javax.inject.Provider;
 
 /**
  * @author Michiel Meeuwissen
  * @since 1.0
  */
-public class MgnlCacheResolver implements CacheResolver {
+class MgnlCacheResolver implements CacheResolver {
 
 
     private final Provider<MgnlCacheManager> cacheManager;
+    private final boolean exceptions;
 
-    @Inject
-    public MgnlCacheResolver(Provider<MgnlCacheManager> cacheManager) {
+    public MgnlCacheResolver(Provider<MgnlCacheManager> cacheManager, boolean exceptions) {
         this.cacheManager = cacheManager;
+        this.exceptions = exceptions;
     }
 
     @Override
     public <K, V> Cache<K, V> resolveCache(CacheInvocationContext<? extends Annotation> cacheInvocationContext) {
-        return cacheManager.get().getCache(cacheInvocationContext.getCacheName());
+        if (exceptions) {
+            String cacheName = ((CacheResult) cacheInvocationContext.getCacheAnnotation()).exceptionCacheName();
+            return cacheManager.get().getCache(cacheName);
+        } else {
+            return cacheManager.get().getCache(cacheInvocationContext.getCacheName());
+        }
     }
 }

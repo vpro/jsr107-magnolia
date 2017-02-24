@@ -22,7 +22,6 @@ public class MgnlCacheManager implements CacheManager {
 
     private final CacheFactoryProvider factory;
 
-
     @Inject
     public MgnlCacheManager(CacheFactoryProvider factory) {
         this.factory = factory;

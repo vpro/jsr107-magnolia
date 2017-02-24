@@ -7,28 +7,28 @@ import javax.cache.annotation.CacheResolver;
 import javax.cache.annotation.CacheResolverFactory;
 import javax.cache.annotation.CacheResult;
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * @author Michiel Meeuwissen
  * @since 1.0
  */
-public class MgnlCacheResolverFactory implements CacheResolverFactory {
+class MgnlCacheResolverFactory implements CacheResolverFactory {
 
-    private final MgnlCacheResolver resolver;
+    private final Provider<MgnlCacheManager> manager;
 
     @Inject
-    public MgnlCacheResolverFactory(MgnlCacheResolver resolver) {
-        this.resolver = resolver;
+    public MgnlCacheResolverFactory(Provider<MgnlCacheManager> manager) {
+        this.manager = manager;
     }
 
     @Override
     public CacheResolver getCacheResolver(CacheMethodDetails<? extends Annotation> cacheMethodDetails) {
-        return resolver;
+        return new MgnlCacheResolver(manager, false);
     }
 
     @Override
     public CacheResolver getExceptionCacheResolver(CacheMethodDetails<CacheResult> cacheMethodDetails) {
-        throw new UnsupportedOperationException();
-
+        return new MgnlCacheResolver(manager, true);
     }
 }

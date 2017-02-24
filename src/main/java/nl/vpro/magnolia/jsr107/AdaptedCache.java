@@ -18,6 +18,8 @@ import javax.cache.processor.EntryProcessorResult;
 
 
 /**
+ * Implements a {@link Cache} backed by a {@link info.magnolia.module.cache.Cache}
+ *
  * @author Michiel Meeuwissen
  * @since 1.0
  */

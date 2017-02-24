@@ -28,7 +28,6 @@ public class CacheConfigurer extends AbstractModule implements ComponentConfigur
     @Override
     protected void configure() {
         bind(CacheKeyGenerator.class).to(DefaultCacheKeyGenerator.class);
-        requireBinding(MgnlCacheResolver.class);
         bind(CacheResolverFactory.class).to(MgnlCacheResolverFactory.class);
         bind(CacheManager.class).to(MgnlCacheManager.class);
 
@@ -46,13 +45,21 @@ public class CacheConfigurer extends AbstractModule implements ComponentConfigur
         }
 
         {
-            ReturnCacheValueInterceptor cacheValueInterceptor = new ReturnCacheValueInterceptor();
-            ReturnCacheValueUnInterceptor cacheValueUnInterceptor = new ReturnCacheValueUnInterceptor();
-            requestInjection(cacheValueInterceptor);
+            //ReturnCacheValueInterceptor cacheValueInterceptor = new ReturnCacheValueInterceptor();
+            //ReturnCacheValueUnInterceptor cacheValueUnInterceptor = new ReturnCacheValueUnInterceptor();
+            //requestInjection(cacheValueInterceptor);
             CacheResultInterceptor cacheResultInterceptor = new CacheResultInterceptor();
             requestInjection(cacheResultInterceptor);
-            bindInterceptor(Matchers.annotatedWith(CacheResult.class), Matchers.any(), cacheValueUnInterceptor, cacheResultInterceptor, cacheValueInterceptor);
-            bindInterceptor(Matchers.any(), Matchers.annotatedWith(CacheResult.class), cacheValueUnInterceptor, cacheResultInterceptor, cacheValueInterceptor);
+            bindInterceptor(Matchers.annotatedWith(CacheResult.class), Matchers.any(),
+                //cacheValueUnInterceptor,
+                cacheResultInterceptor
+                //,cacheValueInterceptor
+            );
+            bindInterceptor(Matchers.any(), Matchers.annotatedWith(CacheResult.class),
+                //cacheValueUnInterceptor,
+                cacheResultInterceptor
+                //, cacheValueInterceptor
+            );
         }
 
         {
