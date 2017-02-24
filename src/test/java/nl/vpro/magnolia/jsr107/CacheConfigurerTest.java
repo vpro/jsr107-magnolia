@@ -10,6 +10,7 @@ import javax.cache.annotation.CachePut;
 import javax.cache.annotation.CacheResult;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.AbstractModule;
@@ -35,7 +36,7 @@ public class CacheConfigurerTest {
         int constant = 0;
 
         @CacheResult(cacheName = "counts")
-        public  int getCachedCount(String key) {
+        public  Integer getCachedCount(String key) {
             try {
                 Thread.sleep(10L);
             } catch (InterruptedException e) {
@@ -45,7 +46,7 @@ public class CacheConfigurerTest {
         @CachePut(cacheName = "counts")
         public void setCachedCount(
             @CacheKey String key,
-            @javax.cache.annotation.CacheValue  int count) {
+            @javax.cache.annotation.CacheValue  Integer count) {
 
         }
         @CacheResult(cacheName = "constants", cacheKeyGenerator = MethodKey.class)
@@ -95,18 +96,27 @@ public class CacheConfigurerTest {
 
     @Test
     public void testCache() {
-        assertEquals(0, instance.getCachedCount("a"));
-        assertEquals(0, instance.getCachedCount("a"));
+        assertEquals(Integer.valueOf(0), instance.getCachedCount("a"));
+        assertEquals(Integer.valueOf(0), instance.getCachedCount("a"));
         cacheManager.getCache("counts").clear();
-        assertEquals(1, instance.getCachedCount("a"));
-        assertEquals(2, instance.getCachedCount("b"));
+        assertEquals(Integer.valueOf(1), instance.getCachedCount("a"));
+        assertEquals(Integer.valueOf(2), instance.getCachedCount("b"));
     }
 
 
     @Test
     public void testCachePut() {
         instance.setCachedCount("a", 10);
-        assertEquals(10, instance.getCachedCount("a"));
+        assertEquals(Integer.valueOf(10), instance.getCachedCount("a"));
+    }
+
+
+    @Test
+    @Ignore("Fails")
+    public void testCachePutNull() {
+        instance.setCachedCount("a", null);
+        //
+        assertNull(instance.getCachedCount("a"));
     }
 
     @Test
