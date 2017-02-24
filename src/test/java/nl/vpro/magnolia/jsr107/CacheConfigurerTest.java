@@ -10,7 +10,6 @@ import javax.cache.annotation.CachePut;
 import javax.cache.annotation.CacheResult;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.AbstractModule;
@@ -112,7 +111,6 @@ public class CacheConfigurerTest {
 
 
     @Test
-    @Ignore("Fails")
     public void testCachePutNull() {
         instance.setCachedCount("a", null);
         //

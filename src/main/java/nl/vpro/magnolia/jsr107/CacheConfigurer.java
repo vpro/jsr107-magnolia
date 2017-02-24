@@ -36,7 +36,7 @@ public class CacheConfigurer extends AbstractModule implements ComponentConfigur
 
 
         {
-            CachePutInterceptor cachePutInterceptor = new CachePutInterceptor();
+            CachePutInterceptor cachePutInterceptor = new CachePutOrNullInterceptor();
             requestInjection(cachePutInterceptor);
             bindInterceptor(Matchers.annotatedWith(CachePut.class), Matchers.any(), cachePutInterceptor);
             bindInterceptor(Matchers.any(), Matchers.annotatedWith(CachePut.class), cachePutInterceptor);
