@@ -13,14 +13,10 @@ import org.aopalliance.intercept.MethodInvocation;
 class ReturnCacheValueInterceptor implements  MethodInterceptor {
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        try {
-            return CacheValue.of(invocation.proceed());
-        } catch(RuntimeException e) {
-            log.error(e.getMessage(), e);
-            return CacheValue.of(e);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return CacheValue.of(new RuntimeException(e.getMessage(), e));
+        Object o = invocation.proceed();
+        if (o == null) {
+            o = AdaptedCache.NULL;
         }
+        return o;
     }
 }

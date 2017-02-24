@@ -36,29 +36,27 @@ public class CacheConfigurer extends AbstractModule implements ComponentConfigur
 
 
         {
-            ParameterCacheValueInterceptor cacheValueInterceptor = new ParameterCacheValueInterceptor();
-            requestInjection(cacheValueInterceptor);
             CachePutInterceptor cachePutInterceptor = new CachePutInterceptor();
             requestInjection(cachePutInterceptor);
-            bindInterceptor(Matchers.annotatedWith(CachePut.class), Matchers.any(), cacheValueInterceptor, cachePutInterceptor);
-            bindInterceptor(Matchers.any(), Matchers.annotatedWith(CachePut.class), cacheValueInterceptor, cachePutInterceptor);
+            bindInterceptor(Matchers.annotatedWith(CachePut.class), Matchers.any(), cachePutInterceptor);
+            bindInterceptor(Matchers.any(), Matchers.annotatedWith(CachePut.class), cachePutInterceptor);
         }
 
         {
-            //ReturnCacheValueInterceptor cacheValueInterceptor = new ReturnCacheValueInterceptor();
-            //ReturnCacheValueUnInterceptor cacheValueUnInterceptor = new ReturnCacheValueUnInterceptor();
-            //requestInjection(cacheValueInterceptor);
+            ReturnCacheValueInterceptor cacheValueInterceptor = new ReturnCacheValueInterceptor();
+            ReturnCacheValueUnInterceptor cacheValueUnInterceptor = new ReturnCacheValueUnInterceptor();
+            requestInjection(cacheValueInterceptor);
             CacheResultInterceptor cacheResultInterceptor = new CacheResultInterceptor();
             requestInjection(cacheResultInterceptor);
             bindInterceptor(Matchers.annotatedWith(CacheResult.class), Matchers.any(),
-                //cacheValueUnInterceptor,
+                cacheValueUnInterceptor,
                 cacheResultInterceptor
-                //,cacheValueInterceptor
+                ,cacheValueInterceptor
             );
             bindInterceptor(Matchers.any(), Matchers.annotatedWith(CacheResult.class),
-                //cacheValueUnInterceptor,
+                cacheValueUnInterceptor,
                 cacheResultInterceptor
-                //, cacheValueInterceptor
+                , cacheValueInterceptor
             );
         }
 

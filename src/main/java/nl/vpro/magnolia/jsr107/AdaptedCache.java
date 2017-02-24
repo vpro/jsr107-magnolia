@@ -27,6 +27,7 @@ import static nl.vpro.magnolia.jsr107.CacheValue.of;
 @Slf4j
 class AdaptedCache<K, V> implements Cache<K, V> {
 
+    protected static final Object NULL = AdaptedCache.class.getName() + "NULL";
     private final info.magnolia.module.cache.Cache mgnlCache;
     private final CacheManager cacheManager;
     private final Configuration<?, ?> configuration;

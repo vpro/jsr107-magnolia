@@ -16,37 +16,20 @@ class CacheValue<V> implements Serializable {
     static <V> CacheValue<V> of(V value) {
         return new CacheValue<>(value);
     }
-    static <V> CacheValue<V> of(RuntimeException e) {
-        return new CacheValue<V>(e);
-    }
 
     private V value;
-    private RuntimeException e;
 
     CacheValue(V value) {
         this.value = value;
     }
 
-    CacheValue(RuntimeException e) {
-        this.e = e;
-    }
 
     public Optional<V> toOptional(){
-        if (e != null) {
-            throw e;
-        }
         return Optional.ofNullable(value);
     }
 
     public V orNull() {
-        if (e != null) {
-            throw e;
-        }
         return toOptional().orElse(null);
-    }
-
-    public boolean hasException() {
-        return e != null;
     }
 
     @SuppressWarnings("unchecked")
@@ -57,7 +40,6 @@ class CacheValue<V> implements Serializable {
         } else {
             out.writeObject(value);
         }
-        out.writeUTF(e == null ? "" : e.getMessage());
     }
 
     @SuppressWarnings("unchecked")
@@ -69,8 +51,6 @@ class CacheValue<V> implements Serializable {
         } else {
             value = (V) i;
         }
-        String em = in.readUTF();
-        e = em.isEmpty() ? null : new RuntimeException(em);
 
     }
 
