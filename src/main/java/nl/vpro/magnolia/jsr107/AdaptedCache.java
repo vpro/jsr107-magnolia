@@ -16,6 +16,7 @@ import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
 
+import static nl.vpro.magnolia.jsr107.CacheValue.of;
 
 /**
  * Implements a {@link Cache} backed by a {@link info.magnolia.module.cache.Cache}
@@ -43,12 +44,12 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public V get(K key) {
-        V cacheValue = (V) mgnlCache.get(key);
+        CacheValue<V> cacheValue = ((CacheValue<V>) mgnlCache.get(key));
         if (cacheValue == null) {
             // Not present in cache
             return null;
         }
-        return cacheValue;
+        return cacheValue.orNull();
     }
 
     @Override
@@ -76,31 +77,27 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public void put(K key, V value) {
-        if (value instanceof CacheValue<?> && ((CacheValue) value).hasException()) {
-            mgnlCache.put(key, value, 30);
-        } else {
-            mgnlCache.put(key, value);
-        }
+        mgnlCache.put(key, of(value));
     }
 
     @Override
     public V getAndPut(K key, V value) {
         V previousValue = get(key);
-        put(key, value);
+        mgnlCache.put(key, of(value));
         return previousValue;
     }
 
     @Override
     public void putAll(Map<? extends K, ? extends V> map) {
         for (Map.Entry<? extends K, ? extends V> e : map.entrySet()) {
-            put(e.getKey(), e.getValue());
+            mgnlCache.put(e.getKey(), of(e.getValue()));
         }
     }
 
     @Override
     public boolean putIfAbsent(K key, V value) {
         if (! mgnlCache.hasElement(key)) {
-            put(key, value);
+            mgnlCache.put(key, of(value));
             return true;
         } else {
             return false;
@@ -139,7 +136,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     public boolean replace(K key, V oldValue, V newValue) {
         V compare = get(key);
         if (compare != null && compare.equals(oldValue)) {
-            mgnlCache.put(key, newValue);
+            mgnlCache.put(key, of(newValue));
             return true;
         }
         return false;
@@ -150,7 +147,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     public boolean replace(K key, V value) {
         boolean result = mgnlCache.hasElement(key);
         if (result) {
-            put(key, value);
+            mgnlCache.put(key, of(value));
             return true;
         }
         return false;

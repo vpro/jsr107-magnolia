@@ -13,6 +13,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.cache.annotation.CacheResult;
 import javax.jcr.Node;
@@ -44,7 +47,16 @@ public class CreateConfigurationTasks {
                     CacheResult cr = m.getDeclaredAnnotation(CacheResult.class);
                     if (cr != null) {
                         DefaultCacheSettings cacheSettings = m.getDeclaredAnnotation(DefaultCacheSettings.class);
-                        result.add(new CreateCacheConfigurationTask(cr.cacheName(), cacheSettings));
+                        Defaults defaults = m.getDeclaredAnnotation(Defaults.class);
+                        DefaultCacheSettings exceptionCacheSettings = null;
+                        if (defaults != null) {
+                            if (defaults.defaults() != null) {
+                                throw new IllegalArgumentException();
+                            }
+                            cacheSettings = defaults.defaults();
+                            exceptionCacheSettings = defaults.exceptionDefaults();
+                        }
+                        result.add(new CreateCacheConfigurationTask(cr.cacheName(), cacheSettings, cr.exceptionCacheName(), exceptionCacheSettings));
                     }
 
                 }
@@ -57,35 +69,61 @@ public class CreateConfigurationTasks {
     public static class CreateCacheConfigurationTask extends AbstractRepositoryTask {
         private final String nodeName;
         private final DefaultCacheSettings cacheSettings;
-        public CreateCacheConfigurationTask(String name, DefaultCacheSettings cacheSettings) {
+        private final String exceptionCacheName;
+        private final DefaultCacheSettings exceptionCacheSettings;
+        public CreateCacheConfigurationTask(String name, DefaultCacheSettings cacheSettings, String exceptionCacheName, DefaultCacheSettings exceptionCacheSettings) {
             super("Cache configuration for " + name, "Installs cache configuration for " + name);
             this.nodeName = name;
             this.cacheSettings = cacheSettings;
+            this.exceptionCacheName = exceptionCacheName;
+            this.exceptionCacheSettings = exceptionCacheSettings;
         }
 
         @Override
         protected void doExecute(InstallContext installContext) throws RepositoryException, TaskExecutionException {
             final Session session = installContext.getJCRSession(RepositoryConstants.CONFIG);
-            Node node;
-            try {
-                node = session.getNode(PATH).getNode(nodeName);
-            } catch (PathNotFoundException pnf) {
-                node = null;
-            }
-            if (node == null) {
-                node = session.getNode(PATH).addNode(nodeName, NodeTypes.Content.NAME);
-                for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
-                    setPropertyOrDefault(node, cacheSettings, m);
-                }
-                CreateConfigurationTasks.log.info("Created {}", node);
-            } else {
-                CreateConfigurationTasks.log.info("Already existed {}", node);
+
+            createCacheConfigurationNode(session);
+            if (this.exceptionCacheName != null) {
+                createExceptionCacheConfigurationNode(session);
             }
             session.save();
 
         }
 
-        protected void setPropertyOrDefault(Node node, DefaultCacheSettings cacheSettings, Method property) {
+        private void createCacheConfigurationNode(Session session) throws RepositoryException {
+            createAndFill(session, nodeName, (node) -> {
+                for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
+                    setPropertyOrDefault(node, m, cacheSettings);
+                }
+            });
+        }
+
+        private void createExceptionCacheConfigurationNode(Session session) throws RepositoryException {
+            createAndFill(session, exceptionCacheName, (node) -> {
+                for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
+                    setPropertyOrDefault(node, m, Stream.of(exceptionCacheSettings, cacheSettings).filter(Objects::nonNull).findFirst().orElse(null));
+                }
+            });
+        }
+
+        private void createAndFill(Session session, String path, Consumer<Node> consume) throws RepositoryException {
+            Node node;
+            try {
+                node = session.getNode(PATH).getNode(path);
+            } catch (PathNotFoundException pnf) {
+                node = null;
+            }
+            if (node == null) {
+                node = session.getNode(PATH).addNode(path, NodeTypes.Content.NAME);
+                consume.accept(node);
+                CreateConfigurationTasks.log.info("Created {}", node);
+            } else {
+                CreateConfigurationTasks.log.info("Already existed {}", node);
+            }
+        }
+
+        protected void setPropertyOrDefault(Node node, Method property, DefaultCacheSettings cacheSettings) {
             Object o;
             try {
                 if (cacheSettings != null) {

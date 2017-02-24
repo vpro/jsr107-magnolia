@@ -43,6 +43,17 @@ public class CreateConfigurationTasksTest {
         }
 
 
+        @CacheResult(cacheName = "exceptionMethodCache", exceptionCacheName = "exceptionMethodExceptionCache")
+        @Defaults(
+            defaults = @DefaultCacheSettings(overflowToDisk = true),
+            exceptionDefaults = @DefaultCacheSettings(overflowToDisk = false)
+
+        )
+        protected static String exceptionMethod() {
+            return "";
+        }
+
+
         public String methodThree() {
             return "";
         }
@@ -51,7 +62,7 @@ public class CreateConfigurationTasksTest {
     @Test
     public void createConfigurationTasks() throws TaskExecutionException {
         List<Task> tasks = CreateConfigurationTasks.createConfigurationTasks(TestBean.class);
-        assertEquals(4, tasks.size());
+        assertEquals(5, tasks.size());
         // TODO, can I get a mock install context?
     }
 
