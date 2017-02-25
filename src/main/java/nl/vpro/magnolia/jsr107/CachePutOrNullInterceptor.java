@@ -7,8 +7,11 @@ import org.jsr107.ri.annotations.InternalCacheKeyInvocationContext;
 import org.jsr107.ri.annotations.guice.CachePutInterceptor;
 
 /**
+ * A specialization of {@link CachePutInterceptor} which arranges putting of <code>null</code> in the cache
+ * (in cooperation with {@link ReturnCacheValueUnInterceptor})
+ *
  * @author Michiel Meeuwissen
- * @since ...
+ * @since 1.6
  */
 class CachePutOrNullInterceptor extends CachePutInterceptor {
 
