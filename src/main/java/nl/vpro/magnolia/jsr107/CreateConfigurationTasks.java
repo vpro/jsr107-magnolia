@@ -25,6 +25,11 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
+ * Use this in your {@link info.magnolia.module.ModuleVersionHandler}
+ * to create default configurations for your caches.
+ * <pre>{@code
+   setInstallOrUpdateTasks(CreateConfigurationTasks.createConfigurationTasks(<classes with @CacheResult annotations>...));
+}</pre>
  * @author Michiel Meeuwissen
  * @since 1.4
  */
