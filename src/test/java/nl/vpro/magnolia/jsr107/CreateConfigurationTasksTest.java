@@ -9,6 +9,7 @@ import javax.cache.annotation.CacheResult;
 
 import org.junit.Test;
 
+import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -45,8 +46,8 @@ public class CreateConfigurationTasksTest {
 
         @CacheResult(cacheName = "exceptionMethodCache", exceptionCacheName = "exceptionMethodExceptionCache")
         @Defaults(
-            defaults = @DefaultCacheSettings(overflowToDisk = true),
-            exceptionDefaults = @DefaultCacheSettings(overflowToDisk = false)
+            cacheSettings = @DefaultCacheSettings(overflowToDisk = true),
+            exceptionCacheSettings = @DefaultCacheSettings(overflowToDisk = false)
 
         )
         protected static String exceptionMethod() {
@@ -59,6 +60,19 @@ public class CreateConfigurationTasksTest {
         }
     }
 
+    public static class TestBean2  {
+
+        @CacheResult(cacheName = "exceptionMethodCache", exceptionCacheName = "exceptionMethodExceptionCache")
+        @Defaults(
+            cacheSettings = @DefaultCacheSettings(overflowToDisk = false),
+            exceptionCacheSettings = @DefaultCacheSettings(overflowToDisk = false)
+        )
+        protected static String exceptionMethod() {
+            return "";
+        }
+
+    }
+
     @Test
     public void createConfigurationTasks() throws TaskExecutionException {
         List<Task> tasks = CreateConfigurationTasks.createConfigurationTasks(TestBean.class);
@@ -66,4 +80,12 @@ public class CreateConfigurationTasksTest {
         // TODO, can I get a mock install context?
     }
 
+
+    @Test
+    public void createConfigurationTasks2() throws TaskExecutionException {
+        List<Task> tasks = CreateConfigurationTasks.createConfigurationTasks(TestBean2.class);
+        System.out.println(tasks);
+        CreateConfigurationTasks.CreateCacheConfigurationTask task = (CreateConfigurationTasks.CreateCacheConfigurationTask) tasks.get(0);
+        assertThat(task.getCacheSettings().overflowToDisk()).isFalse();
+    }
 }

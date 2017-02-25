@@ -7,6 +7,7 @@ import info.magnolia.module.delta.AbstractRepositoryTask;
 import info.magnolia.module.delta.Task;
 import info.magnolia.module.delta.TaskExecutionException;
 import info.magnolia.repository.RepositoryConstants;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
@@ -47,16 +48,18 @@ public class CreateConfigurationTasks {
                     CacheResult cr = m.getDeclaredAnnotation(CacheResult.class);
                     if (cr != null) {
                         DefaultCacheSettings cacheSettings = m.getDeclaredAnnotation(DefaultCacheSettings.class);
-                        Defaults defaults = m.getDeclaredAnnotation(Defaults.class);
+                        Defaults defaultsWrapper = m.getDeclaredAnnotation(Defaults.class);
                         DefaultCacheSettings exceptionCacheSettings = null;
-                        if (defaults != null) {
-                            if (defaults.defaults() != null) {
-                                throw new IllegalArgumentException();
+                        if (defaultsWrapper != null) {
+                            if (cacheSettings != null) {
+                                throw new IllegalArgumentException("Can't use both @DefaultCacheSettings @Defaults on same method " + m);
                             }
-                            cacheSettings = defaults.defaults();
-                            exceptionCacheSettings = defaults.exceptionDefaults();
+                            cacheSettings = defaultsWrapper.cacheSettings();
+                            exceptionCacheSettings = defaultsWrapper.exceptionCacheSettings();
                         }
-                        result.add(new CreateCacheConfigurationTask(cr.cacheName(), cacheSettings, cr.exceptionCacheName(), exceptionCacheSettings));
+                        result.add(new CreateCacheConfigurationTask(
+                            cr.cacheName(), cacheSettings,
+                            cr.exceptionCacheName(), exceptionCacheSettings));
                     }
 
                 }
@@ -66,12 +69,15 @@ public class CreateConfigurationTasks {
         return result;
     }
 
+    @Getter
     public static class CreateCacheConfigurationTask extends AbstractRepositoryTask {
         private final String nodeName;
         private final DefaultCacheSettings cacheSettings;
         private final String exceptionCacheName;
         private final DefaultCacheSettings exceptionCacheSettings;
-        public CreateCacheConfigurationTask(String name, DefaultCacheSettings cacheSettings, String exceptionCacheName, DefaultCacheSettings exceptionCacheSettings) {
+        public CreateCacheConfigurationTask(
+            String name, DefaultCacheSettings cacheSettings,
+            String exceptionCacheName, DefaultCacheSettings exceptionCacheSettings) {
             super("Cache configuration for " + name, "Installs cache configuration for " + name);
             this.nodeName = name;
             this.cacheSettings = cacheSettings;
