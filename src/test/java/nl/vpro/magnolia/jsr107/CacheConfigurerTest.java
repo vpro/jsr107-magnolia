@@ -48,6 +48,9 @@ public class CacheConfigurerTest {
             @javax.cache.annotation.CacheValue  Integer count) {
 
         }
+        public Integer getCachedCountIndirect(String key) {
+            return getCachedCount(key);
+        }
         @CacheResult(cacheName = "constants", cacheKeyGenerator = MethodKey.class)
         public int constant() {
             return constant++;
@@ -97,11 +100,21 @@ public class CacheConfigurerTest {
     public void testCache() {
         assertEquals(Integer.valueOf(0), instance.getCachedCount("a"));
         assertEquals(Integer.valueOf(0), instance.getCachedCount("a"));
+
         cacheManager.getCache("counts").clear();
         assertEquals(Integer.valueOf(1), instance.getCachedCount("a"));
         assertEquals(Integer.valueOf(2), instance.getCachedCount("b"));
     }
 
+
+    @Test
+    public void testCacheIndirect() {
+        instance.setCachedCount("x", 11);
+        assertEquals(Integer.valueOf(11), instance.getCachedCountIndirect("x"));
+        cacheManager.getCache("counts").clear();
+        assertEquals(Integer.valueOf(0), instance.getCachedCountIndirect("x"));
+
+    }
 
     @Test
     public void testCachePut() {
