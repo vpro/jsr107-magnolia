@@ -22,11 +22,14 @@
       <name>Michiel Meeuwissen</name>
       <email>michiel.meeuwissen+github@gmail.com</email>
       <url>http://www.meeuw.org</url>
+      <organization>VPRO</organization>
+      <organizationUrl>https://github.com/vpro/</organizationUrl>
       <roles>
         <role>architect</role>
         <role>developer</role>
       </roles>
       <timezone>Europe/Amsterdam</timezone>
+
     </developer>
   </developers>
 
