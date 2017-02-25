@@ -4,6 +4,9 @@ import info.magnolia.module.cache.CacheFactory;
 import info.magnolia.module.cache.inject.CacheFactoryProvider;
 import info.magnolia.module.cache.mbean.CacheMonitor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.cache.CacheManager;
 import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CachePut;
@@ -47,6 +50,11 @@ public class CacheConfigurerTest {
             @CacheKey String key,
             @javax.cache.annotation.CacheValue  Integer count) {
 
+        }
+        public void multiPut(Map<String, Integer> values) {
+            for (Map.Entry<String, Integer> e : values.entrySet()) {
+                setCachedCount(e.getKey(), e.getValue());
+            }
         }
         public Integer getCachedCountIndirect(String key) {
             return getCachedCount(key);
@@ -113,7 +121,6 @@ public class CacheConfigurerTest {
         assertEquals(Integer.valueOf(11), instance.getCachedCountIndirect("x"));
         cacheManager.getCache("counts").clear();
         assertEquals(Integer.valueOf(0), instance.getCachedCountIndirect("x"));
-
     }
 
     @Test
@@ -122,6 +129,16 @@ public class CacheConfigurerTest {
         assertEquals(Integer.valueOf(10), instance.getCachedCount("a"));
     }
 
+
+    @Test
+    public void testMultiPut() {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("y", 5);
+        map.put("z", 6);
+        instance.multiPut(map);
+        assertEquals(Integer.valueOf(5), instance.getCachedCount("y"));
+        assertEquals(Integer.valueOf(6), instance.getCachedCount("z"));
+    }
 
     @Test
     public void testCachePutNull() {
