@@ -10,10 +10,13 @@ import org.aopalliance.intercept.MethodInvocation;
 class ReturnCacheValueUnInterceptor implements  MethodInterceptor {
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        Object v = invocation.proceed();
-        if (v == AdaptedCache.NULL) {
-            v = null;
+        return unwrap(invocation.proceed());
+    }
+
+    public static Object unwrap(Object value) {
+        if (value == AdaptedCache.NULL) {
+            value = null;
         }
-        return v;
+        return value;
     }
 }
