@@ -105,7 +105,14 @@ public class MgnlCacheManager implements CacheManager {
     @Override
     public boolean isClosed() {
         return false;
+    }
 
+    public Object getValue(String cacheName, Object key) {
+        Cache cache = getCache(cacheName);
+        if (cache == null) {
+            throw new IllegalArgumentException();
+        }
+        return ReturnCacheValueUnInterceptor.unwrap(cache.get(key));
     }
 
     @Override
