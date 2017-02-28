@@ -126,7 +126,7 @@ public class CreateConfigurationTasks {
                 node = null;
             }
             if (node == null) {
-                node = session.getNode(PATH).addNode(path, NodeTypes.Content.NAME);
+                node = session.getNode(PATH).addNode(path, NodeTypes.ContentNode.NAME);
                 consume.accept(node);
                 CreateConfigurationTasks.log.info("Created {}", node);
             } else {
