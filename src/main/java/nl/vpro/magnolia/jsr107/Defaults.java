@@ -13,6 +13,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Defaults {
+    /**
+     * If <code>true</code> Then the values default by cacheSettings/exceptionCacheSetting will even be applied when existing already.
+     */
+    boolean overrideOnUpdate() default false;
     DefaultCacheSettings cacheSettings() default @DefaultCacheSettings();
     DefaultCacheSettings exceptionCacheSettings() default @DefaultCacheSettings();
 }

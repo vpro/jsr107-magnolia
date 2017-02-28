@@ -55,16 +55,21 @@ public class CreateConfigurationTasks {
                         DefaultCacheSettings cacheSettings = m.getDeclaredAnnotation(DefaultCacheSettings.class);
                         Defaults defaultsWrapper = m.getDeclaredAnnotation(Defaults.class);
                         DefaultCacheSettings exceptionCacheSettings = null;
+                        boolean overrideOnUpdate = false;
                         if (defaultsWrapper != null) {
                             if (cacheSettings != null) {
                                 throw new IllegalArgumentException("Can't use both @DefaultCacheSettings @Defaults on same method " + m);
                             }
+                            overrideOnUpdate = defaultsWrapper.overrideOnUpdate();
                             cacheSettings = defaultsWrapper.cacheSettings();
                             exceptionCacheSettings = defaultsWrapper.exceptionCacheSettings();
                         }
                         result.add(new CreateCacheConfigurationTask(
                             cr.cacheName(), cacheSettings,
-                            cr.exceptionCacheName(), exceptionCacheSettings));
+                            cr.exceptionCacheName(), exceptionCacheSettings,
+                            overrideOnUpdate
+
+                        ));
                     }
 
                 }
@@ -80,14 +85,17 @@ public class CreateConfigurationTasks {
         private final DefaultCacheSettings cacheSettings;
         private final String exceptionCacheName;
         private final DefaultCacheSettings exceptionCacheSettings;
+        private final boolean overrideOnUpdate;
         public CreateCacheConfigurationTask(
             String name, DefaultCacheSettings cacheSettings,
-            String exceptionCacheName, DefaultCacheSettings exceptionCacheSettings) {
+            String exceptionCacheName, DefaultCacheSettings exceptionCacheSettings,
+            boolean overrideOnUpdate) {
             super("Cache configuration for " + name, "Installs cache configuration for " + name);
             this.nodeName = name;
             this.cacheSettings = cacheSettings;
             this.exceptionCacheName = exceptionCacheName;
             this.exceptionCacheSettings = exceptionCacheSettings;
+            this.overrideOnUpdate = overrideOnUpdate;
         }
 
         @Override
@@ -113,7 +121,9 @@ public class CreateConfigurationTasks {
         private void createExceptionCacheConfigurationNode(Session session) throws RepositoryException {
             createAndFill(session, exceptionCacheName, (node) -> {
                 for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
-                    setPropertyOrDefault(node, m, Stream.of(exceptionCacheSettings, cacheSettings).filter(Objects::nonNull).findFirst().orElse(null));
+                    setPropertyOrDefault(node, m,
+                        Stream.of(exceptionCacheSettings, cacheSettings).filter(Objects::nonNull).findFirst().orElse(null)
+                    );
                 }
             });
         }
@@ -130,7 +140,13 @@ public class CreateConfigurationTasks {
                 consume.accept(node);
                 CreateConfigurationTasks.log.info("Created {}", node);
             } else {
-                CreateConfigurationTasks.log.info("Already existed {}", node);
+
+                if (overrideOnUpdate) {
+                    CreateConfigurationTasks.log.info("Already existed {}. Will override settings with values defined by annotation");
+                    consume.accept(node);
+                } else {
+                    CreateConfigurationTasks.log.info("Already existed {}", node);
+                }
             }
         }
 
