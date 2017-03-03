@@ -46,7 +46,7 @@ public class CacheConfigurer extends AbstractModule implements ComponentConfigur
             ReturnCacheValueInterceptor cacheValueInterceptor = new ReturnCacheValueInterceptor();
             ReturnCacheValueUnInterceptor cacheValueUnInterceptor = new ReturnCacheValueUnInterceptor();
             requestInjection(cacheValueInterceptor);
-            CacheResultInterceptor cacheResultInterceptor = new CacheResultInterceptor();
+            CacheResultInterceptor cacheResultInterceptor = new NonBlockingCacheResultInterceptor();
             requestInjection(cacheResultInterceptor);
             bindInterceptor(Matchers.annotatedWith(CacheResult.class), Matchers.any(),
                 cacheValueUnInterceptor,

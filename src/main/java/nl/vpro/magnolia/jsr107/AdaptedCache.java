@@ -1,5 +1,6 @@
 package nl.vpro.magnolia.jsr107;
 
+import info.magnolia.module.cache.BlockingCache;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -71,7 +72,11 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public boolean containsKey(K key) {
-        return mgnlCache.hasElement(key);
+        boolean result = mgnlCache.hasElement(key);
+        if (mgnlCache instanceof BlockingCache) {
+            ((BlockingCache) mgnlCache).unlock(key);
+        }
+        return result;
     }
 
     @Override
@@ -89,21 +94,21 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     @Override
     public V getAndPut(K key, V value) {
         V previousValue = get(key);
-        mgnlCache.put(key, of(value));
+        put(key, value);
         return previousValue;
     }
 
     @Override
     public void putAll(Map<? extends K, ? extends V> map) {
         for (Map.Entry<? extends K, ? extends V> e : map.entrySet()) {
-            mgnlCache.put(e.getKey(), of(e.getValue()));
+            put(e.getKey(), e.getValue());
         }
     }
 
     @Override
     public boolean putIfAbsent(K key, V value) {
         if (! mgnlCache.hasElement(key)) {
-            mgnlCache.put(key, of(value));
+            put(key, value);
             return true;
         } else {
             return false;
@@ -142,7 +147,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     public boolean replace(K key, V oldValue, V newValue) {
         V compare = get(key);
         if (compare != null && compare.equals(oldValue)) {
-            mgnlCache.put(key, of(newValue));
+            put(key, newValue);
             return true;
         }
         return false;
@@ -153,7 +158,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     public boolean replace(K key, V value) {
         boolean result = mgnlCache.hasElement(key);
         if (result) {
-            mgnlCache.put(key, of(value));
+            put(key, value);
             return true;
         }
         return false;
@@ -173,7 +178,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     @Override
     public void removeAll(Set<? extends K> keys) {
         for (K key : keys) {
-            mgnlCache.remove(key);
+            remove(key);
         }
     }
 
