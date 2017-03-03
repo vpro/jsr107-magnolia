@@ -137,7 +137,7 @@ public class CacheConfigurerTest {
     @Test
     public void testCachePut() {
         instance.setCachedCount("a", 10);
-        assertEquals(Integer.valueOf(10), cacheManager.getValue("counts", "a"));
+        assertEquals(Integer.valueOf(10), cacheManager.getValue("counts", new DefaultGeneratedCacheKey(new Object[]{"a"})));
         assertEquals(Integer.valueOf(10), instance.getCachedCount("a"));
     }
 
