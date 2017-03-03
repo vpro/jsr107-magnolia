@@ -1,5 +1,6 @@
 package nl.vpro.magnolia.jsr107;
 
+import info.magnolia.module.cache.BlockingCache;
 import info.magnolia.module.cache.CacheFactory;
 import info.magnolia.module.cache.inject.CacheFactoryProvider;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,8 @@ import javax.cache.configuration.Configuration;
 import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
 
+import org.jsr107.ri.annotations.guice.CacheLookupUtil;
+
 /**
  * @author Michiel Meeuwissen
  * @since 1.0
@@ -22,9 +25,12 @@ public class MgnlCacheManager implements CacheManager {
 
     private final CacheFactoryProvider factory;
 
+    private final CacheLookupUtil cacheLookupUtil;
+
     @Inject
-    public MgnlCacheManager(CacheFactoryProvider factory) {
+    public MgnlCacheManager(CacheFactoryProvider factory, CacheLookupUtil util) {
         this.factory = factory;
+        this.cacheLookupUtil = util;
     }
 
     private CacheFactory get() {
@@ -107,13 +113,55 @@ public class MgnlCacheManager implements CacheManager {
         return false;
     }
 
+    /**
+     * Gets a value from the cache (without blocking it)
+     *//*
+
+    public Object getValue(Method method, Object key) {
+        StaticCacheInvocationContext<? extends Annotation> methodDetails = cacheLookupUtil.getMethodDetails(method, method.getClass());
+        final CacheResolver cacheResolver = methodDetails.getCacheResolver();
+
+        final Cache<Object, Object> cache = cacheResolver.resolveCache(cacheLookupUtil.getCacheInvocationContext(method);
+
+
+        info.magnolia.module.cache.Cache mgnlCache = get().getCache(methodDetails.getCacheName());
+        if (mgnlCache== null) {
+            throw new IllegalArgumentException();
+        }
+        Object value = mgnlCache.get(key);
+        if (mgnlCache instanceof BlockingCache) {
+            ((BlockingCache) mgnlCache).unlock(key);
+        }
+        return ReturnCacheValueUnInterceptor.unwrap(value);
+    }
+*/
+    /**
+     * Gets a value from the cache (without blocking it)
+     */
+
+    public Object getValue(String cacheName, Object key) {
+        info.magnolia.module.cache.Cache mgnlCache = get().getCache(cacheName);
+        if (mgnlCache == null) {
+            throw new IllegalArgumentException();
+        }
+        Object value = mgnlCache.get(key);
+        if (mgnlCache instanceof BlockingCache) {
+            ((BlockingCache) mgnlCache).unlock(key);
+        }
+        if (value instanceof CacheValue) {
+            value = ((CacheValue) value).orNull();
+        }
+        return ReturnCacheValueUnInterceptor.unwrap(value);
+    }
+
+/*
     public Object getValue(String cacheName, Object key) {
         Cache cache = getCache(cacheName);
         if (cache == null) {
             throw new IllegalArgumentException();
         }
         return ReturnCacheValueUnInterceptor.unwrap(cache.get(key));
-    }
+    }*/
 
     @Override
     public <T> T unwrap(Class<T> clazz) {

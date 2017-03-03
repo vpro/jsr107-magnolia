@@ -12,6 +12,7 @@ import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CachePut;
 import javax.cache.annotation.CacheResult;
 
+import org.jsr107.ri.annotations.DefaultGeneratedCacheKey;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -93,7 +94,7 @@ public class CacheConfigurerTest {
         }
     }
     TestClass instance;
-    CacheManager cacheManager;
+    MgnlCacheManager cacheManager;
     MockCacheFactory f;
 
     @Before
@@ -111,7 +112,7 @@ public class CacheConfigurerTest {
         });
 
         instance = injector.getInstance(TestClass.class);
-        cacheManager = injector.getInstance(CacheManager.class);
+        cacheManager = (MgnlCacheManager) injector.getInstance(CacheManager.class);
     }
 
     @Test
@@ -136,6 +137,7 @@ public class CacheConfigurerTest {
     @Test
     public void testCachePut() {
         instance.setCachedCount("a", 10);
+        assertEquals(Integer.valueOf(10), cacheManager.getValue("counts", "a"));
         assertEquals(Integer.valueOf(10), instance.getCachedCount("a"));
     }
 
@@ -243,19 +245,34 @@ public class CacheConfigurerTest {
         int expected = 0;
         int max = 10;
         Thread[] threads = new Thread[max];
+        Thread[] threads2 = new Thread[max];
+
+        cacheManager.getCache("counts").clear();
         int[] results = new int[max];
         for (int i = 0; i < max; i++) {
             final int j = i;
             threads[i] =
                 new Thread(() -> {
-                    results[j] = instance.getCachedCount("a");
-                    System.out.println(j + ":" + results[j]);
+                    try {
+                        Thread.sleep(6);
+                        results[j] = instance.getCachedCount("a");
+                        System.out.println(j + " value:" + results[j]);
+                    } catch (InterruptedException ignored) {
+                    }
                 });
             threads[i].start();
+            threads2[i] =
+                new Thread(() -> {
+                    Integer value = (Integer) cacheManager.getValue("counts", new DefaultGeneratedCacheKey(new Object[]{"a"}));
+                    System.out.println(j + " found:" + value);
+
+                });
+            threads2[i].start();
             Thread.sleep(2);
         }
         for (int i = 0; i < max; i++) {
             threads[i].join();
+            threads2[i].join();
             assertEquals(expected, results[i]);
         }
     }
