@@ -3,7 +3,7 @@
 <module>
   <name>jsr107</name>
   <displayName>Provides jsr 107 cache annotations</displayName>
-  <version>1.6</version>
+  <version>1.8</version>
   <components>
     <id>main</id>
     <configurer>

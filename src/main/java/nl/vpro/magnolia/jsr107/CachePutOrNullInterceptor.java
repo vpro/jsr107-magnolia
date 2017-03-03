@@ -16,9 +16,9 @@ import org.jsr107.ri.annotations.guice.CachePutInterceptor;
 class CachePutOrNullInterceptor extends CachePutInterceptor {
 
     @Override
-    protected void cacheValue(final InternalCacheKeyInvocationContext<? extends Annotation> cacheKeyInvocationContext,
-                              final CachePutMethodDetails methodDetails, Object value) {
-
+    protected void cacheValue(
+        final InternalCacheKeyInvocationContext<? extends Annotation> cacheKeyInvocationContext,
+        final CachePutMethodDetails methodDetails, Object value) {
         if (value == null) {
             value = AdaptedCache.NULL;
         }

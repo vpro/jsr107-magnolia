@@ -24,6 +24,8 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Use this in your {@link info.magnolia.module.ModuleVersionHandler}
  * to create default configurations for your caches.
@@ -103,7 +105,7 @@ public class CreateConfigurationTasks {
             final Session session = installContext.getJCRSession(RepositoryConstants.CONFIG);
 
             createCacheConfigurationNode(session);
-            if (this.exceptionCacheName != null) {
+            if (StringUtils.isNotBlank(this.exceptionCacheName)) {
                 createExceptionCacheConfigurationNode(session);
             }
             session.save();
@@ -131,7 +133,7 @@ public class CreateConfigurationTasks {
         private void createAndFill(Session session, String path, Consumer<Node> consume) throws RepositoryException {
             Node node;
             try {
-                node = session.getNode(PATH).getNode(path);
+                node = getOrCreatePath(session, PATH).getNode(path);
             } catch (PathNotFoundException pnf) {
                 node = null;
             }
@@ -147,6 +149,14 @@ public class CreateConfigurationTasks {
                 } else {
                     CreateConfigurationTasks.log.info("Already existed {}", node);
                 }
+            }
+        }
+
+        private Node getOrCreatePath(Session session, String path) throws RepositoryException {
+            try {
+                return session.getNode(path);
+            } catch (RepositoryException re) {
+                throw re;
             }
         }
 

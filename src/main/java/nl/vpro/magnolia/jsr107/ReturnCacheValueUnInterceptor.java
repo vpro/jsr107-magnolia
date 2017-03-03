@@ -17,6 +17,10 @@ class ReturnCacheValueUnInterceptor implements  MethodInterceptor {
         if (value == AdaptedCache.NULL) {
             value = null;
         }
+        if (value == AdaptedCache.EXCEPTION) {
+            value = null;
+        }
         return value;
     }
+
 }

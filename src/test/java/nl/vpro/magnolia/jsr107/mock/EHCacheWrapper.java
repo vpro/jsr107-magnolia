@@ -2,6 +2,7 @@ package nl.vpro.magnolia.jsr107.mock;
 
 import info.magnolia.module.cache.BlockingCache;
 import info.magnolia.module.cache.exception.MgnlLockTimeoutException;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -14,6 +15,7 @@ import java.util.List;
  * @since 1.5
  */
 @Slf4j
+@ToString
 public class EHCacheWrapper  implements BlockingCache {
 
 

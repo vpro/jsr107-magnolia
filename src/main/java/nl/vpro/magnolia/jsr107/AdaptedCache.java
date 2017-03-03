@@ -51,7 +51,11 @@ class AdaptedCache<K, V> implements Cache<K, V> {
             // Not present in cache
             return null;
         }
-        return cacheValue.orNull();
+        V result = cacheValue.orNull();
+        if (result == EXCEPTION) {
+            return null;
+        }
+        return result;
     }
 
     @Override
@@ -238,6 +242,11 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     @Override
     public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String toString() {
+        return "Adapted mgnl cache " + mgnlCache.getClass().getName() + " " + mgnlCache.getName();
     }
 
     @Override
