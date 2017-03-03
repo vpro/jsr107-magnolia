@@ -76,6 +76,16 @@ public class CacheConfigurerTest {
             }
         }
 
+
+        @CacheResult(
+            cacheName = "exceptionWithoutCache")
+        public int exceptionWithoutExceptionCache() {
+            if (count++ % 2 == 0) {
+                throw new RuntimeException("bla" + count);
+            } else {
+                return count;
+            }
+        }
         @CacheResult(cacheName = "null", cacheKeyGenerator = MethodKey.class)
         public String nulls() {
             return count++ % 2 == 0 ? null : "string";
@@ -181,6 +191,31 @@ public class CacheConfigurerTest {
 
         try {
             instance.exception();
+            fail();
+        } catch (RuntimeException rt) {
+            assertEquals("bla3", rt.getMessage());
+        }
+
+    }
+
+    @Test
+    public void testExceptionsWithoutCaching() {
+        try {
+            instance.exceptionWithoutExceptionCache();
+            fail();
+        } catch (RuntimeException rt) {
+            assertEquals("bla1", rt.getMessage());
+        }
+        // exceptions are not cached, so the next call will evaluate again
+        assertEquals(2, instance.exceptionWithoutExceptionCache());
+        // but that _is_ cached_
+        assertEquals(2, instance.exceptionWithoutExceptionCache());
+
+        cacheManager.getCache("exceptionWithoutCache").clear();
+
+
+        try {
+            instance.exceptionWithoutExceptionCache();
             fail();
         } catch (RuntimeException rt) {
             assertEquals("bla3", rt.getMessage());
