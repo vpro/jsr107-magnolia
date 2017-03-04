@@ -73,10 +73,19 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     @Override
     public boolean containsKey(K key) {
         boolean result = mgnlCache.hasElement(key);
+        unlock(key);
+        return result;
+    }
+    public V getUnblocking(K key) {
+        V value = get(key);
+        unlock(key);
+        return value;
+    }
+
+    public void unlock(K key) {
         if (mgnlCache instanceof BlockingCache) {
             ((BlockingCache) mgnlCache).unlock(key);
         }
-        return result;
     }
 
     @Override
@@ -107,7 +116,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public boolean putIfAbsent(K key, V value) {
-        if (! mgnlCache.hasElement(key)) {
+        if (! containsKey(key)) {
             put(key, value);
             return true;
         } else {
@@ -118,7 +127,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public boolean remove(K key) {
-        boolean result = mgnlCache.hasElement(key);
+        boolean result = containsKey(key);
         mgnlCache.remove(key);
         return result;
 
@@ -166,7 +175,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public V getAndReplace(K key, V value) {
-        if (mgnlCache.hasElement(key)) {
+        if (containsKey(key)) {
             V oldValue = get(key);
             put(key, value);
             return oldValue;

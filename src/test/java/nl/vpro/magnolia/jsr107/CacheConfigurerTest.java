@@ -138,6 +138,8 @@ public class CacheConfigurerTest {
     public void testCachePut() {
         instance.setCachedCount("a", 10);
         assertEquals(Integer.valueOf(10), cacheManager.getValue("counts", new DefaultGeneratedCacheKey(new Object[]{"a"})));
+        assertEquals(Integer.valueOf(10), cacheManager.getValue(TestClass.class, instance, "getCachedCount", "a"));
+
         assertEquals(Integer.valueOf(10), instance.getCachedCount("a"));
     }
 
@@ -264,7 +266,9 @@ public class CacheConfigurerTest {
             threads2[i] =
                 new Thread(() -> {
                     Integer value = (Integer) cacheManager.getValue("counts", new DefaultGeneratedCacheKey(new Object[]{"a"}));
-                    System.out.println(j + " found:" + value);
+                    Integer value2 = (Integer) cacheManager.getValue(TestClass.class, "getCachedCount", "a");
+
+                    System.out.println(j + " found:" + value + " " + value2);
 
                 });
             threads2[i].start();
