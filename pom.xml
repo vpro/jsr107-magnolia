@@ -45,7 +45,7 @@
     <magnolia.version>5.5.2</magnolia.version>
     <magnolia.cache.version>5.5.2</magnolia.cache.version>
     <junit.version>4.12</junit.version>
-    <mockito.version>2.7.0</mockito.version>
+    <mockito.version>2.7.14</mockito.version>
     <lombok.version>1.16.12</lombok.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -150,7 +150,8 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.5.2</version>
+      <version>3.6.2</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>info.magnolia</groupId>

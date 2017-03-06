@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.Duration;
 
 /**
  * @author Michiel Meeuwissen
@@ -15,22 +16,42 @@ import java.lang.reflect.Method;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-@Builder(builderMethodName = "_builder")
+@Builder
 @Slf4j
 public class CacheSettings {
 
     public static CacheSettings of(DefaultCacheSettings defaults) {
-        CacheSettingsBuilder builder = CacheSettings._builder();
+        CacheSettingsBuilder builder = new CacheSettingsBuilder();
         invoke(builder, defaults);
         return builder.build();
     }
-
     public static CacheSettingsBuilder builder() {
-        CacheSettingsBuilder builder = _builder();
+        CacheSettingsBuilder builder = new CacheSettingsBuilder();
         invoke(builder, null);
         return builder;
     }
 
+    public static class CacheSettingsBuilder {
+        CacheSettingsBuilder() {
+            super();
+        }
+        public CacheSettingsBuilder timeToIdle(Duration duration) {
+            return timeToIdleSeconds((int) duration.toMillis() / 1000);
+        }
+
+        public CacheSettingsBuilder timeToLive(Duration duration) {
+            return timeToLiveSeconds((int) duration.toMillis() / 1000);
+        }
+
+        public CacheSettingsBuilder diskExpiryThreadInterval(Duration duration) {
+            return diskExpiryThreadIntervalSeconds((int) duration.toMillis() / 1000);
+        }
+    }
+
+    /**
+     * Copies complete all annotation values to a CacheSettings object.
+     * Using reflection.
+     */
     private static void invoke(CacheSettingsBuilder builder, DefaultCacheSettings defaults) {
         for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
             try {
@@ -44,7 +65,7 @@ public class CacheSettings {
                 }
                 tm.invoke(builder, value);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                log.error(e.getMessage(), e);
+                throw new RuntimeException(e);
             }
         }
     }

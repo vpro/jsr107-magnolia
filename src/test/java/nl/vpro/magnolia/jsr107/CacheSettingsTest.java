@@ -1,8 +1,10 @@
 package nl.vpro.magnolia.jsr107;
 
+import java.time.Duration;
+
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Java6Assertions.assertThat;
 
 /**
  * @author Michiel Meeuwissen
@@ -13,7 +15,24 @@ public class CacheSettingsTest {
 
     @Test
     public void test() {
-        assertEquals(500, CacheSettings.builder().build().getMaxElementsInMemory());
+
+        assertThat(CacheSettings.builder()
+            .build()
+            .getMaxElementsInMemory())
+            .isEqualTo(500);
+        assertThat(CacheSettings.builder()
+            .timeToIdle(Duration.ofSeconds(60))
+            .build()
+            .getTimeToIdleSeconds())
+            .isEqualTo(60)
+        ;
+        assertThat(CacheSettings.builder()
+            .copyOnWrite(true)
+            .build()
+            .isCopyOnWrite())
+            .isTrue();
+
+
     }
 
 }
