@@ -64,9 +64,20 @@ Default settings could be configured using the `nl.vpro.magnolia.jsr107.DefaultC
     List<ScheduleItem> scheduleForChannel(String channel, LocalDate date) {
         log.info("Getting movies for  {} {}", channel, date);
         MediaSearch search = new MediaSearch();
-        ....
-        
+        ....        
 ```     
+If you use an 'exception cache' too, you may want to configure this separately. You need to wrap a @nl.vpro.magnolia.jsr107.Defaults then.
+```java
+ @CacheResult(cacheKeyGenerator = ImageCacheKey.class, cacheName = ASSET_LINKS_CACHE, exceptionCacheName = ASSET_LINKS_CACHE + "-exceptions")
+    @Defaults(
+        overrideOnUpdate = true,
+        exceptionCacheSettings = @DefaultCacheSettings(maxElementsInMemory = 200, timeToLiveSeconds = 300, timeToIdleSeconds = 300),
+        cacheSettings = @DefaultCacheSettings(maxElementsInMemory = 2000, timeToLiveSeconds = 3600, timeToIdleSeconds = 3600)
+    )
+    @Override
+   public String getAssetLink(Image image, String variation) {
+
+```
 Actually the code can also be accessed if you want to configure a cache programmaticly for some other reason:
 ```java
        setInstallOrUpdateTask(CreateCacheConfigurationTask.builder()
