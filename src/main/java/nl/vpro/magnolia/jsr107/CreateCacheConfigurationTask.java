@@ -119,8 +119,10 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
     protected void setProperty(Node node, Field property, CacheSettings cacheSettings) {
         try {
             Object o = property.get(cacheSettings);
+            String name = property.getName();
             if (o != null) {
-                PropertyUtil.setProperty(node, property.getName(), o);
+                PropertyUtil.setProperty(node, name, o);
+                log.info("Set {}/@{}={}", node.getPath(), name, o);
             }
         } catch (IllegalArgumentException | IllegalAccessException | RepositoryException e) {
             log.error("For " + property + " of " + cacheSettings + " to set on " + node + " :" + e.getMessage(), e);
