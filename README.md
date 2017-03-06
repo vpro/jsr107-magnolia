@@ -67,5 +67,17 @@ Default settings could be configured using the `nl.vpro.magnolia.jsr107.DefaultC
         ....
         
      ```
+     
+ Actually the code can also be accessed if you want to configure a cache programmaticly for some other reason:
+ ```java
+       setInstallOrUpdateTask(CreateCacheConfigurationTask.builder()
+            .name(CACHE)
+            .cacheSettings(CacheSettings.builder()
+                .eternal(true)
+                .overflowToDisk(true)
+                .build()
+            )
+            .overrideOnUpdate(true)
+            .build());
 
-
+```
