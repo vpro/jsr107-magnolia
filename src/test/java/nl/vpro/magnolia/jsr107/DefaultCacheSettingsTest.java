@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -40,6 +41,9 @@ public class DefaultCacheSettingsTest {
     @Test
     public void testOf() throws NoSuchMethodException {
         assertTrue(CacheSettings.of(A.class.getMethod("test1").getAnnotation(DefaultCacheSettings.class)).isCopyOnRead());
+        assertEquals(500, CacheSettings.of(A.class.getMethod("test1").getAnnotation(DefaultCacheSettings.class)).getMaxElementsInMemory());
+
         assertFalse(CacheSettings.of(A.class.getMethod("test2").getAnnotation(DefaultCacheSettings.class)).isCopyOnRead());
+
     }
 }

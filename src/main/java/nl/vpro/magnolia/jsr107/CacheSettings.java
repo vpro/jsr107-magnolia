@@ -14,13 +14,24 @@ import java.lang.reflect.Method;
  * @since 1.11
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
 @Getter
+@Builder(builderMethodName = "_builder")
 @Slf4j
 public class CacheSettings {
 
     public static CacheSettings of(DefaultCacheSettings defaults) {
-        CacheSettingsBuilder builder = CacheSettings.builder();
+        CacheSettingsBuilder builder = CacheSettings._builder();
+        invoke(builder, defaults);
+        return builder.build();
+    }
+
+    public static CacheSettingsBuilder builder() {
+        CacheSettingsBuilder builder = _builder();
+        invoke(builder, null);
+        return builder;
+    }
+
+    private static void invoke(CacheSettingsBuilder builder, DefaultCacheSettings defaults) {
         for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
             try {
                 Method tm = builder.getClass().getMethod(
@@ -36,7 +47,6 @@ public class CacheSettings {
                 log.error(e.getMessage(), e);
             }
         }
-        return builder.build();
     }
 
     boolean copyOnRead;
