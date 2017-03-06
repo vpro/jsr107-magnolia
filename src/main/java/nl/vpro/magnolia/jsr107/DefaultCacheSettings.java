@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DefaultCacheSettings {
+public @interface DefaultCacheSettings  {
 
     boolean copyOnRead() default false;
     boolean copyOnWrite() default false;

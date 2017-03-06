@@ -1,30 +1,13 @@
 package nl.vpro.magnolia.jsr107;
 
-import info.magnolia.jcr.util.NodeTypes;
-import info.magnolia.jcr.util.PropertyUtil;
-import info.magnolia.module.InstallContext;
-import info.magnolia.module.delta.AbstractRepositoryTask;
 import info.magnolia.module.delta.Task;
-import info.magnolia.module.delta.TaskExecutionException;
-import info.magnolia.repository.RepositoryConstants;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import javax.cache.annotation.CacheResult;
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Use this in your {@link info.magnolia.module.ModuleVersionHandler}
@@ -39,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class CreateConfigurationTasks {
 
-    private static final String PATH = "/modules/cache/config/cacheFactory/caches";
+    static final String PATH = "/modules/cache/config/cacheFactory/caches";
 
     /**
      * Generates tasks to create (default) configuration for the caches provided by a list of beans.
@@ -67,8 +50,8 @@ public class CreateConfigurationTasks {
                             exceptionCacheSettings = defaultsWrapper.exceptionCacheSettings();
                         }
                         result.add(new CreateCacheConfigurationTask(
-                            cr.cacheName(), cacheSettings,
-                            cr.exceptionCacheName(), exceptionCacheSettings,
+                            cr.cacheName(), CacheSettings.of(cacheSettings),
+                            cr.exceptionCacheName(), CacheSettings.of(exceptionCacheSettings),
                             overrideOnUpdate
 
                         ));
@@ -81,100 +64,4 @@ public class CreateConfigurationTasks {
         return result;
     }
 
-    @Getter
-    public static class CreateCacheConfigurationTask extends AbstractRepositoryTask {
-        private final String nodeName;
-        private final DefaultCacheSettings cacheSettings;
-        private final String exceptionCacheName;
-        private final DefaultCacheSettings exceptionCacheSettings;
-        private final boolean overrideOnUpdate;
-        public CreateCacheConfigurationTask(
-            String name, DefaultCacheSettings cacheSettings,
-            String exceptionCacheName, DefaultCacheSettings exceptionCacheSettings,
-            boolean overrideOnUpdate) {
-            super("Cache configuration for " + name, "Installs cache configuration for " + name);
-            this.nodeName = name;
-            this.cacheSettings = cacheSettings;
-            this.exceptionCacheName = exceptionCacheName;
-            this.exceptionCacheSettings = exceptionCacheSettings;
-            this.overrideOnUpdate = overrideOnUpdate;
-        }
-
-        @Override
-        protected void doExecute(InstallContext installContext) throws RepositoryException, TaskExecutionException {
-            final Session session = installContext.getJCRSession(RepositoryConstants.CONFIG);
-
-            createCacheConfigurationNode(session);
-            if (StringUtils.isNotBlank(this.exceptionCacheName)) {
-                createExceptionCacheConfigurationNode(session);
-            }
-            session.save();
-
-        }
-
-        private void createCacheConfigurationNode(Session session) throws RepositoryException {
-            createAndFill(session, nodeName, (node) -> {
-                for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
-                    setPropertyOrDefault(node, m, cacheSettings);
-                }
-            });
-        }
-
-        private void createExceptionCacheConfigurationNode(Session session) throws RepositoryException {
-            createAndFill(session, exceptionCacheName, (node) -> {
-                for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
-                    setPropertyOrDefault(node, m,
-                        Stream.of(exceptionCacheSettings, cacheSettings).filter(Objects::nonNull).findFirst().orElse(null)
-                    );
-                }
-            });
-        }
-
-        private void createAndFill(Session session, String path, Consumer<Node> consume) throws RepositoryException {
-            Node node;
-            try {
-                node = getOrCreatePath(session, PATH).getNode(path);
-            } catch (PathNotFoundException pnf) {
-                node = null;
-            }
-            if (node == null) {
-                node = session.getNode(PATH).addNode(path, NodeTypes.ContentNode.NAME);
-                consume.accept(node);
-                CreateConfigurationTasks.log.info("Created {}", node);
-            } else {
-
-                if (overrideOnUpdate) {
-                    CreateConfigurationTasks.log.info("Already existed {}. Will override settings with values defined by annotation");
-                    consume.accept(node);
-                } else {
-                    CreateConfigurationTasks.log.info("Already existed {}", node);
-                }
-            }
-        }
-
-        private Node getOrCreatePath(Session session, String path) throws RepositoryException {
-            try {
-                return session.getNode(path);
-            } catch (RepositoryException re) {
-                throw re;
-            }
-        }
-
-        protected void setPropertyOrDefault(Node node, Method property, DefaultCacheSettings cacheSettings) {
-            Object o;
-            try {
-                if (cacheSettings != null) {
-                    o = property.invoke(cacheSettings);
-                } else {
-                    o = property.getDefaultValue();
-                }
-                if (o != null) {
-                    PropertyUtil.setProperty(node, property.getName(), o);
-                }
-            } catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException | RepositoryException e) {
-                CreateConfigurationTasks.log.error("For " + property + " of " + cacheSettings + " to set on " + node + " :" + e.getMessage(), e);
-            }
-
-        }
-    }
 }

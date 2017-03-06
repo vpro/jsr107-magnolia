@@ -85,7 +85,7 @@ public class CreateConfigurationTasksTest {
     public void createConfigurationTasks2() throws TaskExecutionException {
         List<Task> tasks = CreateConfigurationTasks.createConfigurationTasks(TestBean2.class);
         System.out.println(tasks);
-        CreateConfigurationTasks.CreateCacheConfigurationTask task = (CreateConfigurationTasks.CreateCacheConfigurationTask) tasks.get(0);
-        assertThat(task.getCacheSettings().overflowToDisk()).isFalse();
+        CreateCacheConfigurationTask task = (CreateCacheConfigurationTask) tasks.get(0);
+        assertThat(task.getCacheSettings().isOverflowToDisk()).isFalse();
     }
 }
