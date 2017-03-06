@@ -66,10 +66,9 @@ Default settings could be configured using the `nl.vpro.magnolia.jsr107.DefaultC
         MediaSearch search = new MediaSearch();
         ....
         
-     ```
-     
- Actually the code can also be accessed if you want to configure a cache programmaticly for some other reason:
- ```java
+```     
+Actually the code can also be accessed if you want to configure a cache programmaticly for some other reason:
+```java
        setInstallOrUpdateTask(CreateCacheConfigurationTask.builder()
             .name(CACHE)
             .cacheSettings(CacheSettings.builder()
