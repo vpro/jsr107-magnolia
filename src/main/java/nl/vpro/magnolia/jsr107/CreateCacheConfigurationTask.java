@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -64,7 +65,10 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
     private void createCacheConfigurationNode(Session session) throws RepositoryException {
         createAndFill(session, nodeName, (node) -> {
             for (Field f : CacheSettings.class.getDeclaredFields()) {
-                setProperty(node, f, cacheSettings);
+                if (!Modifier.isStatic(f.getModifiers())) {
+                    f.setAccessible(true);
+                    setProperty(node, f, cacheSettings);
+                }
             }
         });
     }
@@ -72,9 +76,12 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
     private void createExceptionCacheConfigurationNode(Session session) throws RepositoryException {
         createAndFill(session, exceptionCacheName, (node) -> {
             for (Field f : CacheSettings.class.getDeclaredFields()) {
-                setProperty(node, f,
-                    Stream.of(exceptionCacheSettings, cacheSettings).filter(Objects::nonNull).findFirst().orElse(null)
-                );
+                if (!Modifier.isStatic(f.getModifiers())) {
+                    f.setAccessible(true);
+                    setProperty(node, f,
+                        Stream.of(exceptionCacheSettings, cacheSettings).filter(Objects::nonNull).findFirst().orElse(null)
+                    );
+                }
             }
         });
     }
