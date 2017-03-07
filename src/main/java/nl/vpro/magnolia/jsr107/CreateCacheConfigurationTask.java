@@ -37,7 +37,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
     private final boolean overrideOnUpdate;
 
 
-    @Builder
+    @Builder()
     public CreateCacheConfigurationTask(
         String name, CacheSettings cacheSettings,
         String exceptionCacheName, CacheSettings exceptionCacheSettings,

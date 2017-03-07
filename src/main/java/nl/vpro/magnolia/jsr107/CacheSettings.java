@@ -16,43 +16,45 @@ import java.time.Duration;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-@Builder
+@Builder(builderClassName = "Builder")
 @Slf4j
 public class CacheSettings {
 
     public static CacheSettings of(DefaultCacheSettings defaults) {
-        CacheSettingsBuilder builder = new CacheSettingsBuilder();
+        CacheSettings.Builder builder = new CacheSettings.Builder();
         invoke(builder, defaults);
         return builder.build();
     }
-    public static CacheSettingsBuilder builder() {
-        CacheSettingsBuilder builder = new CacheSettingsBuilder();
+    public static CacheSettings.Builder builder() {
+        CacheSettings.Builder builder = new CacheSettings.Builder();
         invoke(builder, null);
         return builder;
     }
 
-    public static class CacheSettingsBuilder {
-        CacheSettingsBuilder() {
+    public static class Builder {
+        Builder() {
             super();
         }
-        public CacheSettingsBuilder timeToIdle(Duration duration) {
+        public CacheSettings.Builder timeToIdle(Duration duration) {
             return timeToIdleSeconds((int) duration.toMillis() / 1000);
         }
 
-        public CacheSettingsBuilder timeToLive(Duration duration) {
+        public CacheSettings.Builder timeToLive(Duration duration) {
             return timeToLiveSeconds((int) duration.toMillis() / 1000);
         }
 
-        public CacheSettingsBuilder diskExpiryThreadInterval(Duration duration) {
+        public CacheSettings.Builder diskExpiryThreadInterval(Duration duration) {
             return diskExpiryThreadIntervalSeconds((int) duration.toMillis() / 1000);
         }
     }
 
     /**
-     * Copies complete all annotation values to a CacheSettings object.
-     * Using reflection.
+     * Copies all {@link DefaultCacheSettings} annotation values to a CacheSettings object.
+     * Using reflection, considering default values.
+     * This way we ensure that {@link CacheSettings} and {@link @DefaultCacheSetting} have effectively the
+     * same fields and defaults.
      */
-    private static void invoke(CacheSettingsBuilder builder, DefaultCacheSettings defaults) {
+    private static void invoke(CacheSettings.Builder builder, DefaultCacheSettings defaults) {
         for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
             try {
                 Method tm = builder.getClass().getMethod(
