@@ -15,9 +15,9 @@ import javax.cache.processor.EntryProcessorResult;
 
 /**
  * @author Michiel Meeuwissen
- * @since ...
+ * @since 1.11
  */
-public class UnblockingCache<K, V> implements Cache<K, V> {
+class UnblockingCache<K, V> implements Cache<K, V> {
 
     private final AdaptedCache<K, V> cache;
 
