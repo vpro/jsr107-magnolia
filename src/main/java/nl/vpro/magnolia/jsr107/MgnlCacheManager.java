@@ -131,17 +131,15 @@ public class MgnlCacheManager implements CacheManager {
     public boolean isClosed() {
         return false;
     }
-
-    /**
+  /**
      * Gets a value from the cache (without blocking it)
      */
     public Object getValue(Class<?> clazz, Object instance, String methodName, Object... key) {
-
         Method method = null;
         for (Method m : clazz.getDeclaredMethods()) {
             if (m.getName().equals(methodName)) {
+                m.setAccessible(true);
                 method = m;
-                method.setAccessible(true);
                 break;
             }
         }

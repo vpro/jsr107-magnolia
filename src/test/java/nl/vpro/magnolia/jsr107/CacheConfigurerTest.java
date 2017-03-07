@@ -266,7 +266,7 @@ public class CacheConfigurerTest {
             threads2[i] =
                 new Thread(() -> {
                     Integer value = (Integer) cacheManager.getValue("counts", new DefaultGeneratedCacheKey(new Object[]{"a"}));
-                    Integer value2 = (Integer) cacheManager.getValue(TestClass.class, "getCachedCount", "a");
+                    Integer value2 = (Integer) cacheManager.getValue(TestClass.class, instance, "getCachedCount", "a");
 
                     System.out.println(j + " found:" + value + " " + value2);
 
