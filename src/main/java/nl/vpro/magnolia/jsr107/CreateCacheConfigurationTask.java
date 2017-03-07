@@ -6,7 +6,6 @@ import info.magnolia.module.InstallContext;
 import info.magnolia.module.delta.AbstractRepositoryTask;
 import info.magnolia.module.delta.TaskExecutionException;
 import info.magnolia.repository.RepositoryConstants;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,7 +36,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
     private final boolean overrideOnUpdate;
 
 
-    @Builder
+    @lombok.Builder(builderClassName = "Builder")
     public CreateCacheConfigurationTask(
         String name, CacheSettings cacheSettings,
         String exceptionCacheName, CacheSettings exceptionCacheSettings,
@@ -50,6 +49,14 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
         this.overrideOnUpdate = overrideOnUpdate;
     }
 
+    public static class Builder {
+        public Builder settings(CacheSettings.Builder builder) {
+            return cacheSettings(builder.build());
+        }
+        public Builder exceptionSettings(CacheSettings.Builder builder) {
+            return exceptionCacheSettings(builder.build());
+        }
+    }
     @Override
     protected void doExecute(InstallContext installContext) throws RepositoryException, TaskExecutionException {
         final Session session = installContext.getJCRSession(RepositoryConstants.CONFIG);

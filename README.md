@@ -78,7 +78,7 @@ If you use an 'exception cache' too, you may want to configure this separately. 
    public String getAssetLink(Image image, String variation) {
 
 ```
-Actually the code can also be accessed if you want to configure a cache programmaticly for some other reason:
+Actually the code can also be accessed if you want to configure a cache programmaticly for some other reason. This more or less eliminates to configure cache outside code altogether.
 ```java
        setInstallOrUpdateTask(CreateCacheConfigurationTask.builder()
             .name(CACHE)

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.Duration;
 
 /**
  * @author Michiel Meeuwissen
@@ -15,23 +16,45 @@ import java.lang.reflect.Method;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-@Builder(builderMethodName = "_builder")
+@Builder(builderClassName = "Builder")
 @Slf4j
 public class CacheSettings {
 
     public static CacheSettings of(DefaultCacheSettings defaults) {
-        CacheSettingsBuilder builder = CacheSettings._builder();
+        CacheSettings.Builder builder = new CacheSettings.Builder();
         invoke(builder, defaults);
         return builder.build();
     }
-
-    public static CacheSettingsBuilder builder() {
-        CacheSettingsBuilder builder = _builder();
+    public static CacheSettings.Builder builder() {
+        CacheSettings.Builder builder = new CacheSettings.Builder();
         invoke(builder, null);
         return builder;
     }
 
-    private static void invoke(CacheSettingsBuilder builder, DefaultCacheSettings defaults) {
+    public static class Builder {
+        Builder() {
+            super();
+        }
+        public CacheSettings.Builder timeToIdle(Duration duration) {
+            return timeToIdleSeconds((int) duration.toMillis() / 1000);
+        }
+
+        public CacheSettings.Builder timeToLive(Duration duration) {
+            return timeToLiveSeconds((int) duration.toMillis() / 1000);
+        }
+
+        public CacheSettings.Builder diskExpiryThreadInterval(Duration duration) {
+            return diskExpiryThreadIntervalSeconds((int) duration.toMillis() / 1000);
+        }
+    }
+
+    /**
+     * Copies all {@link DefaultCacheSettings} annotation values to a CacheSettings object.
+     * Using reflection, considering default values.
+     * This way we ensure that {@link CacheSettings} and {@link @DefaultCacheSetting} have effectively the
+     * same fields and defaults.
+     */
+    private static void invoke(CacheSettings.Builder builder, DefaultCacheSettings defaults) {
         for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
             try {
                 Method tm = builder.getClass().getMethod(
@@ -44,7 +67,7 @@ public class CacheSettings {
                 }
                 tm.invoke(builder, value);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                log.error(e.getMessage(), e);
+                throw new RuntimeException(e);
             }
         }
     }
