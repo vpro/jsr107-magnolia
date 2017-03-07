@@ -138,11 +138,15 @@ public class MgnlCacheManager implements CacheManager {
     public Object getValue(Class<?> clazz, Object instance, String methodName, Object... key) {
 
         Method method = null;
-        for (Method m : clazz.getMethods()) {
+        for (Method m : clazz.getDeclaredMethods()) {
             if (m.getName().equals(methodName)) {
                 method = m;
+                method.setAccessible(true);
                 break;
             }
+        }
+        if (method == null) {
+            throw new IllegalArgumentException("Cannot find method " + methodName + " in " + clazz);
         }
         CacheResultMethodDetails methodDetails = (CacheResultMethodDetails) cacheLookupUtil.getMethodDetails(method, instance.getClass());
         final CacheResolver cacheResolver = methodDetails.getCacheResolver();
