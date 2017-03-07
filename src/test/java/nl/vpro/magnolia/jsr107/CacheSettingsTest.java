@@ -20,12 +20,13 @@ public class CacheSettingsTest {
             .build()
             .getMaxElementsInMemory())
             .isEqualTo(500);
+
         assertThat(CacheSettings.builder()
             .timeToIdle(Duration.ofSeconds(60))
             .build()
             .getTimeToIdleSeconds())
-            .isEqualTo(60)
-        ;
+            .isEqualTo(60);
+
         assertThat(CacheSettings.builder()
             .copyOnWrite(true)
             .build()
