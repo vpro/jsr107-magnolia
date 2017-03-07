@@ -91,7 +91,14 @@ public class MgnlCacheManager implements CacheManager {
         return new AdaptedCache<>(get().getCache(cacheName), this, MgnlCacheConfiguration.INSTANCE);
     }
 
-
+    /**
+     * Caches in magnolia are always blocking. Sometimes this is asking for trouble.
+     */
+    public <K, V> Cache<K, V> getUnblockingCache(String cacheName) {
+        return new UnblockingCache<K, V>(
+            new AdaptedCache<>(get().getCache(cacheName), this, MgnlCacheConfiguration.INSTANCE)
+        );
+    }
     @Override
     public Iterable<String> getCacheNames() {
         return get().getCacheNames();
@@ -145,6 +152,8 @@ public class MgnlCacheManager implements CacheManager {
         final GeneratedCacheKey cacheKey = cacheKeyGenerator.generateCacheKey(cacheKeyInvocationContext);
         return ReturnCacheValueUnInterceptor.unwrap(cache.getUnblocking(cacheKey));
     }
+
+
 
     /**
      * Gets a value from the cache (without blocking it)
