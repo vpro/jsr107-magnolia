@@ -80,14 +80,19 @@ If you use an 'exception cache' too, you may want to configure this separately. 
 ```
 Actually the code can also be accessed if you want to configure a cache programmaticly for some other reason. This more or less eliminates to configure cache outside code altogether.
 ```java
-       setInstallOrUpdateTask(CreateCacheConfigurationTask.builder()
+       // Create browser cache for api clients
+        setInstallOrUpdateTask(CreateCacheConfigurationTask.builder()
             .name(CACHE)
-            .cacheSettings(CacheSettings.builder()
+            .settings(CacheSettings.builder()
                 .eternal(true)
                 .overflowToDisk(true)
-                .build()
+                .diskSpoolBufferSizeMB(500)
+                .maxElementsInMemory(200)
+                .diskExpiryThreadInterval(Duration.ofHours(24))
+                .overflowToDisk(true)
             )
             .overrideOnUpdate(true)
             .build());
+
 
 ```
