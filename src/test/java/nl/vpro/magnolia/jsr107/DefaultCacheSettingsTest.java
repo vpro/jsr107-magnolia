@@ -4,9 +4,8 @@ import java.lang.reflect.Method;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 
 /**
  * @author Michiel Meeuwissen
@@ -24,7 +23,8 @@ public class DefaultCacheSettingsTest {
         }
 
         @DefaultCacheSettings(
-            copyOnRead = false
+            copyOnRead = false,
+            eternal = true
         )
         public String test2() {
             return "a";
@@ -40,10 +40,31 @@ public class DefaultCacheSettingsTest {
     }
     @Test
     public void testOf() throws NoSuchMethodException {
-        assertTrue(CacheSettings.of(A.class.getMethod("test1").getAnnotation(DefaultCacheSettings.class)).isCopyOnRead());
-        assertEquals(500, CacheSettings.of(A.class.getMethod("test1").getAnnotation(DefaultCacheSettings.class)).getMaxElementsInMemory());
+        assertThat(
+            CacheSettings.of(A.class.getMethod("test1").getAnnotation(DefaultCacheSettings.class)).isCopyOnRead()
+        ).isTrue();
 
-        assertFalse(CacheSettings.of(A.class.getMethod("test2").getAnnotation(DefaultCacheSettings.class)).isCopyOnRead());
+        assertThat(
+            CacheSettings.of(A.class.getMethod("test1").getAnnotation(DefaultCacheSettings.class)).getMaxElementsInMemory()
+        ).isEqualTo(500); // default value
+
+        assertThat(
+            CacheSettings.of(A.class.getMethod("test1").getAnnotation(DefaultCacheSettings.class)).getTimeToIdleSeconds()
+        ).isEqualTo(300); // default value
+
+        assertThat(
+            CacheSettings.of(A.class.getMethod("test2").getAnnotation(DefaultCacheSettings.class)).isCopyOnRead()
+        ).isFalse();
+    }
+
+    @Test
+    public void testEternal() throws NoSuchMethodException {
+        assertThat(
+            CacheSettings.of(A.class.getMethod("test2").getAnnotation(DefaultCacheSettings.class)).isEternal()
+        ).isTrue();
+        assertThat(
+            CacheSettings.of(A.class.getMethod("test2").getAnnotation(DefaultCacheSettings.class)).getTimeToIdleSeconds()
+        ).isNull();
 
     }
 }

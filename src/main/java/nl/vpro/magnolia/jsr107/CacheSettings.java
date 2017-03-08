@@ -10,6 +10,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
 
+import org.apache.commons.lang3.ClassUtils;
+
 /**
  * @author Michiel Meeuwissen
  * @since 1.11
@@ -23,7 +25,29 @@ public class CacheSettings {
     public static CacheSettings of(DefaultCacheSettings defaults) {
         CacheSettings.Builder builder = new CacheSettings.Builder();
         invoke(builder, defaults);
-        return builder.build();
+        CacheSettings settings = builder.build();
+        if (settings.isEternal()) {
+            boolean change = false;
+            try {
+                Integer defaultTimeToIdle = (Integer) DefaultCacheSettings.class.getMethod("timeToIdleSeconds").getDefaultValue();
+                if (defaults.timeToIdleSeconds() == defaultTimeToIdle) {
+                    change = true;
+                    builder.timeToIdleSeconds(null);
+                }
+                Integer defaultTimeToLive = (Integer) DefaultCacheSettings.class.getMethod("timeToLiveSeconds").getDefaultValue();
+                if (defaults.timeToLiveSeconds() == defaultTimeToLive) {
+                    change = true;
+                    builder.timeToLiveSeconds(null);
+                }
+
+            } catch (Exception e){
+                throw new RuntimeException(e);
+            }
+            if (change) {
+                settings = builder.build();
+            }
+        }
+        return settings;
     }
     public static CacheSettings.Builder builder() {
         CacheSettings.Builder builder = new CacheSettings.Builder();
@@ -46,6 +70,15 @@ public class CacheSettings {
         public CacheSettings.Builder diskExpiryThreadInterval(Duration duration) {
             return diskExpiryThreadIntervalSeconds((int) duration.toMillis() / 1000);
         }
+        public CacheSettings.Builder eternal(boolean eternal) {
+            if (eternal) {
+                timeToIdleSeconds(null);
+                timeToLiveSeconds(null);
+
+            }
+            this.eternal = eternal;
+            return this;
+        }
     }
 
     /**
@@ -57,10 +90,21 @@ public class CacheSettings {
     private static void invoke(CacheSettings.Builder builder, DefaultCacheSettings defaults) {
         for (Method m : DefaultCacheSettings.class.getDeclaredMethods()) {
             try {
-                Method tm = builder.getClass().getMethod(
-                    m.getName(), m.getReturnType());
-                Object value;
-                if (defaults == null) {
+                Method tm;
+                try {
+                    tm = builder.getClass().getMethod(
+                        m.getName(), m.getReturnType());
+                } catch (NoSuchMethodException nsme) {
+                    if (m.getReturnType().isPrimitive()) {
+                        tm = builder.getClass().getMethod(
+                            m.getName(), ClassUtils.primitiveToWrapper(m.getReturnType())
+                        );
+                    } else {
+                        throw nsme;
+                    }
+                }
+                    Object value;
+                    if (defaults == null) {
                     value = m.getDefaultValue();
                 } else {
                     value = m.invoke(defaults);
@@ -78,8 +122,8 @@ public class CacheSettings {
     int maxElementsInMemory;
     String memoryStoreEvictionPolicy;
     boolean overflowToDisk;
-    int timeToIdleSeconds;
-    int timeToLiveSeconds;
+    Integer timeToIdleSeconds;
+    Integer timeToLiveSeconds;
     int diskExpiryThreadIntervalSeconds;
     int diskSpoolBufferSizeMB;
     int blockingTimeout;

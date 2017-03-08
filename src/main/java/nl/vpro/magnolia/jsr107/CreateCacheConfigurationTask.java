@@ -15,10 +15,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
+import javax.jcr.*;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -127,10 +124,8 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
         try {
             Object o = property.get(cacheSettings);
             String name = property.getName();
-            if (o != null) {
-                PropertyUtil.setProperty(node, name, o);
-                log.info("Set {}/@{}={}", node.getPath(), name, o);
-            }
+            PropertyUtil.setProperty(node, name, o);
+            log.info("Set {}/@{}={}", node.getPath(), name, o);
         } catch (IllegalArgumentException | IllegalAccessException | RepositoryException e) {
             log.error("For " + property + " of " + cacheSettings + " to set on " + node + " :" + e.getMessage(), e);
         }

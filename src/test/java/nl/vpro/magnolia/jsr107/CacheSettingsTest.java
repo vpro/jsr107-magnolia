@@ -33,6 +33,21 @@ public class CacheSettingsTest {
             .isCopyOnWrite())
             .isTrue();
 
+        assertThat(CacheSettings.builder()
+            .eternal(true)
+            .build()
+            .isEternal())
+            .isTrue();
+    }
+
+    @Test
+    public void settingEternalResetsTTLDefaults() {
+        assertThat(CacheSettings.builder()
+            .eternal(true)
+            .build()
+            .getTimeToIdleSeconds())
+            .isEqualTo(0);
+
 
     }
 
