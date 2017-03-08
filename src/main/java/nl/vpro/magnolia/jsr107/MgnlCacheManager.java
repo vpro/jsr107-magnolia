@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Function;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
@@ -133,10 +134,15 @@ public class MgnlCacheManager implements CacheManager {
     public boolean isClosed() {
         return false;
     }
-  /**
+    /**
      * Gets a value from the cache (without blocking it)
      */
     public Object getValue(Class<?> clazz, Object instance, String methodName, Object... key) {
+        return getValueGetter(clazz, instance, methodName)
+            .get(key);
+    }
+
+    public Getter getValueGetter(Class<?> clazz, Object instance, String methodName) {
         Method method = null;
         for (Method m : clazz.getDeclaredMethods()) {
             if (m.getName().equals(methodName)) {
@@ -150,16 +156,26 @@ public class MgnlCacheManager implements CacheManager {
         }
         CacheResultMethodDetails methodDetails = (CacheResultMethodDetails) cacheLookupUtil.getMethodDetails(method, clazz);
         final CacheResolver cacheResolver = methodDetails.getCacheResolver();
-        MethodInvocation invocation = new SimpleMethodInvocation(instance, methodDetails,  key);
-        InternalCacheInvocationContext<? extends Annotation> cacheInvocationContext = cacheLookupUtil.getCacheInvocationContext(invocation);
-        CacheKeyInvocationContext<? extends Annotation>  cacheKeyInvocationContext = cacheLookupUtil.getCacheKeyInvocationContext(invocation);
-        AdaptedCache<Object, Object> cache = (AdaptedCache) cacheResolver.resolveCache(cacheInvocationContext);
         final CacheKeyGenerator cacheKeyGenerator = methodDetails.getCacheKeyGenerator();
-        final GeneratedCacheKey cacheKey = cacheKeyGenerator.generateCacheKey(cacheKeyInvocationContext);
-        final Object value = cache.getUnblocking(cacheKey);
-        return ReturnCacheValueUnInterceptor.unwrap(value);
+        return key -> {
+            MethodInvocation invocation = new SimpleMethodInvocation(instance, methodDetails, key);
+            InternalCacheInvocationContext<? extends Annotation> cacheInvocationContext = cacheLookupUtil.getCacheInvocationContext(invocation);
+            CacheKeyInvocationContext<? extends Annotation> cacheKeyInvocationContext = cacheLookupUtil.getCacheKeyInvocationContext(invocation);
+            AdaptedCache<Object, Object> cache = (AdaptedCache) cacheResolver.resolveCache(cacheInvocationContext);
+            final GeneratedCacheKey cacheKey = cacheKeyGenerator.generateCacheKey(cacheKeyInvocationContext);
+            final Object value = cache.getUnblocking(cacheKey);
+            return ReturnCacheValueUnInterceptor.unwrap(value);
+        };
     }
 
+
+    public interface Getter extends Function<Object[], Object> {
+
+        default Object get(Object... objects) {
+            return apply(objects);
+        }
+
+    }
 
 
     /**
