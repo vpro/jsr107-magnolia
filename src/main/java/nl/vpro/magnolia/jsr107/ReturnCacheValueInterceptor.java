@@ -33,9 +33,9 @@ class ReturnCacheValueInterceptor extends AbstractCacheResultInterceptor<MethodI
             }
             return o;
         } catch (Throwable t) {
-            cacheException(invocation);
+            //Putting _something_ in the cache, otherwise Blocking timeout exceptions in magnolia....
+            cache(invocation, AdaptedCache.EXCEPTION);
             throw t;
-
         }
     }
 
@@ -49,18 +49,13 @@ class ReturnCacheValueInterceptor extends AbstractCacheResultInterceptor<MethodI
         this.cacheContextSource = cacheContextSource;
     }
 
-    /**
-     * Putting _something_ in the cache, otherwise Blocking timeout exceptions in magnolia....
-     */
-    protected void cacheException(MethodInvocation invocation) {
-
+    protected void cache(MethodInvocation invocation, Object value) {
         final InternalCacheKeyInvocationContext<? extends Annotation> cacheKeyInvocationContext = cacheContextSource.getCacheKeyInvocationContext(invocation);
         final CacheResultMethodDetails methodDetails = this.getStaticCacheKeyInvocationContext(cacheKeyInvocationContext, InterceptorType.CACHE_RESULT);
-        final Cache<Object, Object> cache = methodDetails.getCacheResolver().resolveCache(cacheKeyInvocationContext);
         final CacheKeyGenerator cacheKeyGenerator = methodDetails.getCacheKeyGenerator();
         final GeneratedCacheKey cacheKey = cacheKeyGenerator.generateCacheKey(cacheKeyInvocationContext);
-        log.debug("Marking as exception {} {}", cache, cacheKey);
-        cache.put(cacheKey, AdaptedCache.EXCEPTION);
+        final Cache<Object, Object> cache = methodDetails.getCacheResolver().resolveCache(cacheKeyInvocationContext);
+        log.debug("Caching {} {}", cache, cacheKey);
+        cache.put(cacheKey, value);
     }
-
 }
