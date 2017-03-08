@@ -78,7 +78,8 @@ If you use an 'exception cache' too, you may want to configure this separately. 
    public String getAssetLink(Image image, String variation) {
 
 ```
-Actually the code can also be accessed if you want to configure a cache programmaticly for some other reason. This more or less eliminates to configure cache outside code altogether.
+Actually the code can also be accessed if you want to configure a cache programmaticly for some other reason. This more or less eliminates the need to configure cache outside code altogether.
+The cache settings are in this way still visible in the JCR-tree, and can be modified and viewed via JMX, but they can be maintained in the code of your application.
 ```java
        // Create browser cache for api clients
         setInstallOrUpdateTask(CreateCacheConfigurationTask.builder()
