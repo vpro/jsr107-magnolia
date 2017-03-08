@@ -14,7 +14,7 @@ public class CacheSettingsTest {
 
 
     @Test
-    public void test() {
+    public void testBasics() {
 
         assertThat(CacheSettings.builder()
             .build()
@@ -46,7 +46,7 @@ public class CacheSettingsTest {
             .eternal(true)
             .build()
             .getTimeToIdleSeconds())
-            .isEqualTo(0);
+            .isNull();
 
 
     }
