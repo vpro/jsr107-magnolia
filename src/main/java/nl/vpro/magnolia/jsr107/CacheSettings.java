@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Objects;
 
 import org.apache.commons.lang3.ClassUtils;
@@ -30,25 +31,37 @@ public class CacheSettings {
         CacheSettings settings = builder.build();
         boolean change = false;
         if (settings.isEternal()) {
-            change = setToNullIfDefault(defaults, "timeToIdleSeconds", () -> builder.timeToIdleSeconds(null));
-            change |= setToNullIfDefault(defaults, "timeToLiveSeconds", () -> builder.timeToLiveSeconds(null));
+            change = setToNullIfDefault(defaults, "timeToIdleSeconds", builder);
+            change |= setToNullIfDefault(defaults, "timeToLiveSeconds", builder);
         }
         if (! settings.isOverflowToDisk()) {
-            change |= setToNullIfDefault(defaults, "diskExpiryThreadIntervalSeconds", () -> builder.diskExpiryThreadInterval(null));
-            change |= setToNullIfDefault(defaults, "diskSpoolBufferSizeMB", () -> builder.diskSpoolBufferSizeMB(null));
+            change |= setToNullIfDefault(defaults, "diskExpiryThreadIntervalSeconds", builder);
+            change |= setToNullIfDefault(defaults, "diskSpoolBufferSizeMB", builder);
         }
         if (change) {
             settings = builder.build();
         }
         return settings;
     }
+    protected static boolean setToNullIfDefault(DefaultCacheSettings defaults, String methodName, Builder builder) {
+        return
+            runIfDefault(defaults, methodName, () -> {
+                Method method = Arrays.stream(Builder.class.getMethods())
+                    .filter(m -> m.getName().equals(methodName)).findFirst().orElse(null);
+                try {
+                    method.invoke(builder, (Object) null);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+    }
 
-    protected static boolean setToNullIfDefault(DefaultCacheSettings defaults, String methodName, Runnable nuller) {
+    protected static boolean runIfDefault(DefaultCacheSettings defaults, String methodName, Runnable runnable) {
         try {
             Method method =  DefaultCacheSettings.class.getMethod(methodName);
             Object defaultValue = method.getDefaultValue();
             if (Objects.equals(method.invoke(defaults), defaultValue)) {
-                nuller.run();
+                runnable.run();
                 return true;
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
