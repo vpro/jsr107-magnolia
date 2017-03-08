@@ -38,6 +38,13 @@ public class CacheSettingsTest {
             .build()
             .isEternal())
             .isTrue();
+
+
+        assertThat(CacheSettings.builder()
+            .memoryStoreEvictionPolicy(EvictionPolicy.LFU)
+            .build()
+            .getMemoryStoreEvictionPolicy())
+            .isEqualTo(EvictionPolicy.LFU);
     }
 
     @Test

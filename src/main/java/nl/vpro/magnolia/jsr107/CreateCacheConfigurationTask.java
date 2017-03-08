@@ -123,6 +123,9 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
     protected void setProperty(Node node, Field property, CacheSettings cacheSettings) {
         try {
             Object o = property.get(cacheSettings);
+            if (o instanceof Enum) {
+                o = ((Enum) o).name();
+            }
             String name = property.getName();
             PropertyUtil.setProperty(node, name, o);
             log.info("Set {}/@{}={}", node.getPath(), name, o);

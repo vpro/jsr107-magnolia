@@ -13,6 +13,7 @@ import java.time.Duration;
 import org.apache.commons.lang3.ClassUtils;
 
 /**
+ * See https://documentation.magnolia-cms.com/display/DOCS/Ehcache+module
  * @author Michiel Meeuwissen
  * @since 1.11
  */
@@ -118,13 +119,49 @@ public class CacheSettings {
 
     boolean copyOnRead;
     boolean copyOnWrite;
+    /**
+     * If elements are set to eternal, timeouts are ignored and the element is never expired.
+     */
     boolean eternal;
+    /**
+     * Sets maximum number of objects that will be created in memory. 0 = no limit
+     */
     int maxElementsInMemory;
-    String memoryStoreEvictionPolicy;
+
+    /**
+     * Sets maximum number of objects maintained in the DiskStore. The default value of zero means unlimited.
+     */
+    int maxElementsOnDisk;
+    /**
+     * Policy is enforced upon reaching the maxElementsInMemory limit. Available policies:
+     Least Recently Used (specified as LRU)
+     First In First Out (specified as FIFO)
+     Less Frequently Used (specified as LFU)
+     */
+    EvictionPolicy memoryStoreEvictionPolicy;
+
+    /**
+     * Permits elements to overflow to disk when the memory store has reached the maxInMemory limit.
+     */
     boolean overflowToDisk;
+    /**
+     * Optional attribute. Sets max idle time between accesses for an element before it expires. Only used if the element is not eternal. A value of 0 means that an Element can idle indefinitely.
+     */
     Integer timeToIdleSeconds;
+    /**
+     * Sets lifespan for an element. Only used if the element is not eternal. Optional attribute. A value of 0 means an Element can live for infinity
+     */
     Integer timeToLiveSeconds;
+    /**
+     * Number of seconds between runs of the disk expiry thread.
+     */
     int diskExpiryThreadIntervalSeconds;
+    /**
+     * Size to allocate to DiskStore for a spool buffer. Writes are made to this area and then asynchronously written to disk. Default: 30MB. Each spool buffer is used only by its cache. If OutOfMemory errors, you may need to lower this value. To improve DiskStore performance consider increasing it. Trace level logging in the DiskStore will show if put back ups are occurring.
+     */
     int diskSpoolBufferSizeMB;
+    /**
+     * Instructs Ehcache to wait the specified time in milliseconds before attempting to cache the request. Create the blockingTiemout property in the tree at the same level where the EhCacheFactory class is defined, not inside the defaultCacheConfiguration node.
+     */
     int blockingTimeout;
 }
