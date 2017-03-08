@@ -1,5 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
+import lombok.ToString;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +19,7 @@ import javax.cache.processor.EntryProcessorResult;
  * @author Michiel Meeuwissen
  * @since 1.11
  */
+@ToString
 class UnblockingCache<K, V> implements Cache<K, V> {
 
     private final AdaptedCache<K, V> cache;
