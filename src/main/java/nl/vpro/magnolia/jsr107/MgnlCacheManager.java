@@ -9,6 +9,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.List;
 import java.util.Properties;
 
 import javax.cache.Cache;
@@ -22,6 +23,7 @@ import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
 
 import org.aopalliance.intercept.MethodInvocation;
+import org.jsr107.ri.annotations.CacheParameterDetails;
 import org.jsr107.ri.annotations.CacheResultMethodDetails;
 import org.jsr107.ri.annotations.InternalCacheInvocationContext;
 import org.jsr107.ri.annotations.guice.CacheLookupUtil;
@@ -146,15 +148,16 @@ public class MgnlCacheManager implements CacheManager {
         if (method == null) {
             throw new IllegalArgumentException("Cannot find method " + methodName + " in " + clazz);
         }
-        CacheResultMethodDetails methodDetails = (CacheResultMethodDetails) cacheLookupUtil.getMethodDetails(method, instance.getClass());
+        CacheResultMethodDetails methodDetails = (CacheResultMethodDetails) cacheLookupUtil.getMethodDetails(method, clazz);
         final CacheResolver cacheResolver = methodDetails.getCacheResolver();
-        MethodInvocation invocation = new SimpleMethodInvocation(instance, method,  key);
+        MethodInvocation invocation = new SimpleMethodInvocation(instance, methodDetails,  key);
         InternalCacheInvocationContext<? extends Annotation> cacheInvocationContext = cacheLookupUtil.getCacheInvocationContext(invocation);
         CacheKeyInvocationContext<? extends Annotation>  cacheKeyInvocationContext = cacheLookupUtil.getCacheKeyInvocationContext(invocation);
         AdaptedCache<Object, Object> cache = (AdaptedCache) cacheResolver.resolveCache(cacheInvocationContext);
         final CacheKeyGenerator cacheKeyGenerator = methodDetails.getCacheKeyGenerator();
         final GeneratedCacheKey cacheKey = cacheKeyGenerator.generateCacheKey(cacheKeyInvocationContext);
-        return ReturnCacheValueUnInterceptor.unwrap(cache.getUnblocking(cacheKey));
+        final Object value = cache.getUnblocking(cacheKey);
+        return ReturnCacheValueUnInterceptor.unwrap(value);
     }
 
 
@@ -201,9 +204,16 @@ public class MgnlCacheManager implements CacheManager {
         private final Method method;
         private final Object[] key;
 
-        private SimpleMethodInvocation(Object instance, Method method, Object... key) {
+        private SimpleMethodInvocation(Object instance, CacheResultMethodDetails method, Object... key) {
             this.instance = instance;
-            this.method = method;
+            this.method = method.getMethod();
+            List<CacheParameterDetails> keyParameters = method.getKeyParameters();
+            for (int i = 0; i < keyParameters.size(); i++) {
+                Object keyEntry = key[i];
+                if (keyEntry != null && ! keyParameters.get(i).getRawType().isInstance(keyEntry)) {
+                    throw new IllegalArgumentException(keyEntry + " (parameter " + i + ") is not compatible with " + keyParameters);
+                }
+            }
             this.key = key;
         }
 
