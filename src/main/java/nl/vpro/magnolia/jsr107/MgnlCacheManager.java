@@ -3,6 +3,7 @@ package nl.vpro.magnolia.jsr107;
 import info.magnolia.module.cache.BlockingCache;
 import info.magnolia.module.cache.CacheFactory;
 import info.magnolia.module.cache.inject.CacheFactoryProvider;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
@@ -36,6 +37,7 @@ import org.jsr107.ri.annotations.guice.CacheLookupUtil;
  * @since 1.0
  */
 @Slf4j
+@ToString
 public class MgnlCacheManager implements CacheManager {
 
     private final CacheFactoryProvider factory;
