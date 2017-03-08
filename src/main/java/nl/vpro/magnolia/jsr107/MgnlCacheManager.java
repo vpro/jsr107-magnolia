@@ -135,7 +135,12 @@ public class MgnlCacheManager implements CacheManager {
         return false;
     }
     /**
-     * Gets a value from the cache (without blocking it)
+     * Gets a value from the cache (without blocking it). Point to the method with the {@link javax.cache.annotation.CacheResult} annotation,
+     * and give its key parameters.
+     * @param clazz The class containing the @CacheResult annotation
+     * @param instance The instance on which the cache method will be called
+     * @param methodName The method for which the cache must be used
+     * @param key The arguments of that method that make up the key in the cache (considering the cache key generator and the {@link javax.cache.annotation.CacheKey} annotations.
      */
     public Object getValue(Class<?> clazz, Object instance, String methodName, Object... key) {
         return getValueGetter(clazz, instance, methodName)
@@ -180,6 +185,8 @@ public class MgnlCacheManager implements CacheManager {
 
     /**
      * Gets a value from the cache (without blocking it)
+     * This method requires that you know exactly what the key is in the underlying cache.
+     * {@link #getValue(Class, Object, String, Object...)} does not have that requirement.
      */
 
     public Object getValue(String cacheName, Object key) {
