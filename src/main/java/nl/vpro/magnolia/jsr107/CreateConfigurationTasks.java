@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.cache.annotation.CacheResult;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Use this in your {@link info.magnolia.module.ModuleVersionHandler}
  * to create default configurations for your caches.
@@ -49,12 +51,21 @@ public class CreateConfigurationTasks {
                             cacheSettings = defaultsWrapper.cacheSettings();
                             exceptionCacheSettings = defaultsWrapper.exceptionCacheSettings();
                         }
-                        result.add(new CreateCacheConfigurationTask(
-                            cr.cacheName(), CacheSettings.of(cacheSettings),
-                            cr.exceptionCacheName(), CacheSettings.of(exceptionCacheSettings),
-                            overrideOnUpdate
+                        CacheSettings settings = CacheSettings.of(cacheSettings);
+                        result.add(CreateCacheConfigurationTask.builder()
+                            .name(cr.cacheName())
+                            .overrideOnUpdate(overrideOnUpdate)
+                            .cacheSettings(settings)
+                            .build());
+                        if (StringUtils.isNotBlank(cr.exceptionCacheName())) {
+                            result.add(CreateCacheConfigurationTask.builder()
+                                .name(cr.exceptionCacheName())
+                                .overrideOnUpdate(overrideOnUpdate)
+                                .cacheSettings(settings)
+                                .cacheSettings(CacheSettings.of(exceptionCacheSettings))
+                                .build());
+                        }
 
-                        ));
                     }
 
                 }

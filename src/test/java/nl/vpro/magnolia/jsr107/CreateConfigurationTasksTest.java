@@ -76,7 +76,8 @@ public class CreateConfigurationTasksTest {
     @Test
     public void createConfigurationTasks() throws TaskExecutionException {
         List<Task> tasks = CreateConfigurationTasks.createConfigurationTasks(TestBean.class);
-        assertEquals(5, tasks.size());
+        assertEquals(6, tasks.size());
+        System.out.println(tasks);
         // TODO, can I get a mock install context?
     }
 
