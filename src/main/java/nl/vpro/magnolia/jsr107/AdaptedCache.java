@@ -20,7 +20,7 @@ import javax.cache.processor.EntryProcessorResult;
 import static nl.vpro.magnolia.jsr107.CacheValue.of;
 
 /**
- * Implements a {@link Cache} backed by a {@link info.magnolia.module.cache.Cache}
+ * Implements a {@link javax.cache.Cache} backed by a {@link info.magnolia.module.cache.Cache}
  *
  * @author Michiel Meeuwissen
  * @since 1.0
