@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.Objects;
 
 import org.apache.commons.lang3.ClassUtils;
 
@@ -27,29 +28,35 @@ public class CacheSettings {
         CacheSettings.Builder builder = new CacheSettings.Builder();
         invoke(builder, defaults);
         CacheSettings settings = builder.build();
+        boolean change = false;
         if (settings.isEternal()) {
-            boolean change = false;
-            try {
-                Integer defaultTimeToIdle = (Integer) DefaultCacheSettings.class.getMethod("timeToIdleSeconds").getDefaultValue();
-                if (defaults.timeToIdleSeconds() == defaultTimeToIdle) {
-                    change = true;
-                    builder.timeToIdleSeconds(null);
-                }
-                Integer defaultTimeToLive = (Integer) DefaultCacheSettings.class.getMethod("timeToLiveSeconds").getDefaultValue();
-                if (defaults.timeToLiveSeconds() == defaultTimeToLive) {
-                    change = true;
-                    builder.timeToLiveSeconds(null);
-                }
-
-            } catch (Exception e){
-                throw new RuntimeException(e);
-            }
-            if (change) {
-                settings = builder.build();
-            }
+            change = setToNullIfDefault(defaults, "timeToIdleSeconds", () -> builder.timeToIdleSeconds(null));
+            change |= setToNullIfDefault(defaults, "timeToLiveSeconds", () -> builder.timeToLiveSeconds(null));
+        }
+        if (! settings.isOverflowToDisk()) {
+            change |= setToNullIfDefault(defaults, "diskExpiryThreadIntervalSeconds", () -> builder.diskExpiryThreadInterval(null));
+            change |= setToNullIfDefault(defaults, "diskSpoolBufferSizeMB", () -> builder.diskSpoolBufferSizeMB(null));
+        }
+        if (change) {
+            settings = builder.build();
         }
         return settings;
     }
+
+    protected static boolean setToNullIfDefault(DefaultCacheSettings defaults, String methodName, Runnable nuller) {
+        try {
+            Method method =  DefaultCacheSettings.class.getMethod(methodName);
+            Object defaultValue = method.getDefaultValue();
+            if (Objects.equals(method.invoke(defaults), defaultValue)) {
+                nuller.run();
+                return true;
+            }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
     public static CacheSettings.Builder builder() {
         CacheSettings.Builder builder = new CacheSettings.Builder();
         invoke(builder, null);
@@ -61,23 +68,32 @@ public class CacheSettings {
             super();
         }
         public CacheSettings.Builder timeToIdle(Duration duration) {
-            return timeToIdleSeconds((int) duration.toMillis() / 1000);
+            return timeToIdleSeconds(duration == null ? null : (int) duration.toMillis() / 1000);
         }
 
         public CacheSettings.Builder timeToLive(Duration duration) {
-            return timeToLiveSeconds((int) duration.toMillis() / 1000);
+            return timeToLiveSeconds(duration == null ? null : (int) duration.toMillis() / 1000);
         }
 
         public CacheSettings.Builder diskExpiryThreadInterval(Duration duration) {
-            return diskExpiryThreadIntervalSeconds((int) duration.toMillis() / 1000);
+            return diskExpiryThreadIntervalSeconds(duration == null ? null : (int) duration.toMillis() / 1000);
+
         }
         public CacheSettings.Builder eternal(boolean eternal) {
             if (eternal) {
                 timeToIdleSeconds(null);
                 timeToLiveSeconds(null);
-
             }
             this.eternal = eternal;
+            return this;
+        }
+
+        public CacheSettings.Builder overflowToDisk(boolean overflowToDisk) {
+            if (! overflowToDisk) {
+                diskExpiryThreadInterval(null);
+                diskSpoolBufferSizeMB(null);
+            }
+            this.overflowToDisk = overflowToDisk;
             return this;
         }
     }
@@ -155,13 +171,15 @@ public class CacheSettings {
     /**
      * Number of seconds between runs of the disk expiry thread.
      */
-    int diskExpiryThreadIntervalSeconds;
+    Integer diskExpiryThreadIntervalSeconds;
     /**
      * Size to allocate to DiskStore for a spool buffer. Writes are made to this area and then asynchronously written to disk. Default: 30MB. Each spool buffer is used only by its cache. If OutOfMemory errors, you may need to lower this value. To improve DiskStore performance consider increasing it. Trace level logging in the DiskStore will show if put back ups are occurring.
      */
-    int diskSpoolBufferSizeMB;
+    Integer diskSpoolBufferSizeMB;
     /**
      * Instructs Ehcache to wait the specified time in milliseconds before attempting to cache the request. Create the blockingTiemout property in the tree at the same level where the EhCacheFactory class is defined, not inside the defaultCacheConfiguration node.
+     *
+     * TODO: So this is created at the wrong level now. But this is a bit silly, I'd want to set it <em>per cache</em>
      */
     int blockingTimeout;
 }

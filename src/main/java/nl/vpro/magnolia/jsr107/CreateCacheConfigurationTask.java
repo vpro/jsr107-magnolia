@@ -127,8 +127,16 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
                 o = ((Enum) o).name();
             }
             String name = property.getName();
-            PropertyUtil.setProperty(node, name, o);
-            log.info("Set {}/@{}={}", node.getPath(), name, o);
+            if (o != null) {
+                log.info("Set {}/@{}={}", node.getPath(), name, o);
+                PropertyUtil.setProperty(node, name, o);
+            } else {
+                if (PropertyUtil.getPropertyOrNull(node,  name) != null) {
+                    log.info("Unset {}/@{}", node.getPath(), name);
+                    PropertyUtil.setProperty(node, name, null);
+                }
+            }
+
         } catch (IllegalArgumentException | IllegalAccessException | RepositoryException e) {
             log.error("For " + property + " of " + cacheSettings + " to set on " + node + " :" + e.getMessage(), e);
         }

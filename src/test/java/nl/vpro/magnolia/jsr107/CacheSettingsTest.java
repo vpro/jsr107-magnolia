@@ -58,4 +58,15 @@ public class CacheSettingsTest {
 
     }
 
+    @Test
+    public void settingOverflowtoDiskResetDiskSettings() {
+        assertThat(CacheSettings.builder()
+            .overflowToDisk(false)
+            .build()
+            .getDiskExpiryThreadIntervalSeconds())
+            .isNull();
+
+
+    }
+
 }
