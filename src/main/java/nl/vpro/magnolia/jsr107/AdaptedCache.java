@@ -3,10 +3,7 @@ package nl.vpro.magnolia.jsr107;
 import info.magnolia.module.cache.BlockingCache;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
