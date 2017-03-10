@@ -53,7 +53,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
             return null;
         }
         V result = cacheValue.orNull();
-        if (result == EXCEPTION) {
+        if (Objects.equals(result, EXCEPTION)) {
             return null;
         }
         return result;
