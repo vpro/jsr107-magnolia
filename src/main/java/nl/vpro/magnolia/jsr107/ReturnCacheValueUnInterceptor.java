@@ -1,5 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
+import java.util.Objects;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
@@ -14,10 +16,10 @@ class ReturnCacheValueUnInterceptor implements  MethodInterceptor {
     }
 
     public static Object unwrap(Object value) {
-        if (value == AdaptedCache.NULL) {
+        if (Objects.equals(value, AdaptedCache.NULL)) {
             value = null;
         }
-        if (value == AdaptedCache.EXCEPTION) {
+        if (Objects.equals(value, AdaptedCache.EXCEPTION)) {
             value = null;
         }
         return value;
