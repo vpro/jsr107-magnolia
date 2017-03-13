@@ -6,7 +6,7 @@
   <name>JSR107-Magnolia</name>
   <version>1.12-SNAPSHOT</version>
   <inceptionYear>2016</inceptionYear>
-  <description>JSR-17 caching for the Magnolia CMS</description>
+  <description>JSR-107 caching for the Magnolia CMS</description>
   <url>https://github.com/vpro/jsr107-magnolia</url>
 
   <licenses>
