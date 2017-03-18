@@ -26,7 +26,7 @@ Non serializable values are only possible if the underlying eh-cache is configur
 Sadly, [model classes are not instantiated by guice, but by Magnolia itself](https://jira.magnolia-cms.com/browse/MAGNOLIA-6601), so they cannot be proxied by guice.
 
 
-##Installation
+## Installation
 
 Download the most recent jar from: https://oss.sonatype.org/content/repositories/snapshots/nl/vpro/jsr107-magnolia and install it like you'd normally would.
 
