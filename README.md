@@ -38,12 +38,12 @@ Or you can add this to your pom.xml
   <version>1.11</version>
 </dependency>
 ```
-###Configuration
-You can configure the create cache like so in the JCR-tree:
+### Configuration
+You can configure the created cache like so in the JCR-tree:
 ![cache configuration](cache-config.png?raw=true "Cache configuration")
 
-Cache-configurations can be automaticly created like this using tasks on the version handler of your module.
-E.g.
+Cache-configurations can be automaticly created using tasks on the version handler of your module.
+E.g. like this:
 ```java
 @Slf4j
 public class CinemaVersionHandler extends DefaultModuleVersionHandler {
