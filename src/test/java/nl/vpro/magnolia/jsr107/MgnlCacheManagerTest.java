@@ -4,12 +4,12 @@ import info.magnolia.module.cache.inject.CacheFactoryProvider;
 import info.magnolia.module.cache.mbean.CacheMonitor;
 
 import java.time.Duration;
+import java.util.Iterator;
 
 import javax.cache.CacheManager;
 import javax.cache.annotation.CacheResult;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.AbstractModule;
@@ -31,11 +31,13 @@ public class MgnlCacheManagerTest {
 
     public static class TestClass {
         int count = 0;
-
-        int constant = 0;
-
         @CacheResult(cacheName = "counts")
         public Integer getCachedCount(String key) {
+            return count++;
+        }
+
+        @CacheResult(cacheName = "counts2")
+        public Integer getCachedCount(String key, String key2) {
             return count++;
         }
 
@@ -43,7 +45,7 @@ public class MgnlCacheManagerTest {
 
     MgnlCacheManager cacheManager;
     MockCacheFactory f;
-    CacheConfigurerTest.TestClass instance;
+    MgnlCacheManagerTest.TestClass instance;
 
     @Before
     public void setup() {
@@ -60,12 +62,12 @@ public class MgnlCacheManagerTest {
         });
 
         cacheManager = (MgnlCacheManager) injector.getInstance(CacheManager.class);
-        instance = injector.getInstance(CacheConfigurerTest.TestClass.class);
+        instance = injector.getInstance(MgnlCacheManagerTest.TestClass.class);
+
 
     }
 
     @Test
-    @Ignore
     public void getValue() {
         assertThat(instance.getCachedCount("a")).isEqualTo(0);
         long start = System.nanoTime();
@@ -73,6 +75,19 @@ public class MgnlCacheManagerTest {
             assertThat(cacheManager.getValue(TestClass.class, instance, "getCachedCount", "a")).isEqualTo(0);
         }
         System.out.print(Duration.ofNanos(System.nanoTime() - start));
+    }
+
+    @Test
+    public void getKeys() {
+        instance.getCachedCount("a", "b");
+        instance.getCachedCount("c", "d");
+
+        Iterator<Object[]> keys = cacheManager.getKeys(TestClass.class, instance, "getCachedCount", String.class, String.class);
+        assertThat(keys.hasNext()).isTrue();
+        assertThat(keys.next()).containsExactly("a", "b");
+        assertThat(keys.next()).containsExactly("c", "d");
+        assertThat(keys.hasNext()).isFalse();
+
     }
 
 }

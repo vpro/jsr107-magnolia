@@ -28,8 +28,6 @@ public class EHCacheWrapper  implements BlockingCache {
     }
 
     public static EHCacheWrapper getCache(Ehcache ehcache) {
-
-
         net.sf.ehcache.constructs.blocking.BlockingCache blockingCache = new net.sf.ehcache.constructs.blocking.BlockingCache(ehcache);
         blockingCache.setCacheManager(ehcache.getCacheManager());
         return new EHCacheWrapper(blockingCache);

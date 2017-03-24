@@ -8,11 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
@@ -27,6 +28,7 @@ import javax.inject.Inject;
 import org.aopalliance.intercept.MethodInvocation;
 import org.jsr107.ri.annotations.CacheParameterDetails;
 import org.jsr107.ri.annotations.CacheResultMethodDetails;
+import org.jsr107.ri.annotations.DefaultGeneratedCacheKey;
 import org.jsr107.ri.annotations.InternalCacheInvocationContext;
 import org.jsr107.ri.annotations.guice.CacheLookupUtil;
 
@@ -145,23 +147,13 @@ public class MgnlCacheManager implements CacheManager {
      * @param key The arguments of that method that make up the key in the cache (considering the cache key generator and the {@link javax.cache.annotation.CacheKey} annotations.
      */
     public Object getValue(Class<?> clazz, Object instance, String methodName, Object... key) {
-        return getValueGetter(clazz, instance, methodName)
+        Class<?>[] keyClasses = key == null ? null : Arrays.stream(key).map(k -> k == null ? Object.class : k.getClass()).toArray((IntFunction<Class<?>[]>) Class[]::new);
+        return getValueGetter(clazz, instance, methodName, keyClasses)
             .get(key);
     }
 
-    public Getter getValueGetter(Class<?> clazz, Object instance, String methodName) {
-        Method method = null;
-        for (Method m : clazz.getDeclaredMethods()) {
-            if (m.getName().equals(methodName)) {
-                m.setAccessible(true);
-                method = m;
-                break;
-            }
-        }
-        if (method == null) {
-            throw new IllegalArgumentException("Cannot find method " + methodName + " in " + clazz);
-        }
-        CacheResultMethodDetails methodDetails = (CacheResultMethodDetails) cacheLookupUtil.getMethodDetails(method, clazz);
+    public Getter getValueGetter(Class<?> clazz, Object instance, String methodName, Class<?>... keyClasses) {
+        CacheResultMethodDetails methodDetails = getMethodDetails(clazz, methodName, keyClasses);
         final CacheResolver cacheResolver = methodDetails.getCacheResolver();
         final CacheKeyGenerator cacheKeyGenerator = methodDetails.getCacheKeyGenerator();
         return key -> {
@@ -173,6 +165,82 @@ public class MgnlCacheManager implements CacheManager {
             final Object value = cache.getUnblocking(cacheKey);
             return ReturnCacheValueUnInterceptor.unwrap(value);
         };
+    }
+
+    public Iterator<Object[]> getKeys(Class<?> clazz, Object instance, String methodName, Class<?>... keys) {
+        CacheResultMethodDetails methodDetails = getMethodDetails(clazz, methodName, keys);
+        final CacheResolver cacheResolver = methodDetails.getCacheResolver();
+        MethodInvocation invocation = new SimpleMethodInvocation(instance, methodDetails, keys);
+        InternalCacheInvocationContext<? extends Annotation> cacheInvocationContext = cacheLookupUtil.getCacheInvocationContext(invocation);
+        AdaptedCache<Object, Object> cache = (AdaptedCache) cacheResolver.resolveCache(cacheInvocationContext);
+        Iterator<Cache.Entry<Object, Object>> iterator = cache.iterator();
+        Field parameters;
+        try {
+            parameters = DefaultGeneratedCacheKey.class.getDeclaredField("parameters");
+            parameters.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+        return new Iterator<Object[]>() {
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public Object[] next() {
+                try {
+                    DefaultGeneratedCacheKey key = (DefaultGeneratedCacheKey) iterator.next().getKey();
+                    Object[] params = (Object[]) parameters.get(key);
+                    return params;
+                } catch (IllegalAccessException e) {
+                    log.error(e.getMessage(), e);
+                    throw new RuntimeException(e);
+                }
+
+            }
+        };
+    }
+
+    protected CacheResultMethodDetails getMethodDetails(Class<?> clazz, String methodName, Class<?>... keyClasses) {
+
+        Method method = getMethod(clazz, methodName, keyClasses);
+        return  (CacheResultMethodDetails) cacheLookupUtil.getMethodDetails(method, clazz);
+    }
+
+    protected Method getMethod(Class<?> clazz, String methodName, Class<?>... arguments) {
+        Method method = null;
+
+        List<Method> candidates = new ArrayList<>();
+        OUTER:
+        for (Method m : clazz.getDeclaredMethods()) {
+            if (m.getName().equals(methodName)) {
+                if (arguments.length > 0) {
+                    if (arguments.length != m.getParameterTypes().length) {
+                        continue;
+                    }
+                    for (int i = 0; i < m.getParameterTypes().length; i++) {
+                        if (!m.getParameterTypes()[i].isAssignableFrom(arguments[i])) {
+                            continue OUTER;
+                        }
+                    }
+
+                }
+
+                m.setAccessible(true);
+                candidates.add(m);
+            }
+        }
+        if (candidates.isEmpty()) {
+            throw new IllegalArgumentException("Cannot find method " + methodName + "[" + Arrays.asList(arguments) + "] in " + clazz);
+        }
+        if (candidates.size() == 1) {
+            method = candidates.get(0);
+        } else {
+            throw new IllegalArgumentException("Multiple methods " + methodName + "[" + Arrays.asList(arguments) + "] found " + clazz + " " + candidates);
+        }
+
+        return method;
     }
 
 
@@ -233,13 +301,20 @@ public class MgnlCacheManager implements CacheManager {
             this.instance = instance;
             this.method = method.getMethod();
             List<CacheParameterDetails> keyParameters = method.getKeyParameters();
+            if (key == null) {
+                key = new Object[this.method.getParameterCount()];
+            }
             for (int i = 0; i < keyParameters.size(); i++) {
                 Object keyEntry = key[i];
-                if (keyEntry != null && ! keyParameters.get(i).getRawType().isInstance(keyEntry)) {
+                if (keyEntry != null && !keyParameters.get(i).getRawType().isInstance(keyEntry)) {
                     throw new IllegalArgumentException(keyEntry + " (parameter " + i + ") is not compatible with " + keyParameters);
                 }
             }
             this.key = key;
+        }
+
+        private SimpleMethodInvocation(Object instance, CacheResultMethodDetails method, Class<?>... keyClasses) {
+            this(instance, method, new Object[method.getMethod().getParameterCount()]);
         }
 
         @Override
