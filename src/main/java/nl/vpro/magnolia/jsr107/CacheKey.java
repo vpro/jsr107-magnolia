@@ -24,10 +24,11 @@ public class CacheKey implements GeneratedCacheKey {
      *
      * @param parameters the paramters to use
      */
-    public CacheKey(Serializable[] parameters) {
+    public CacheKey(Serializable... parameters) {
         this.parameters = parameters;
         this.hashCode = Arrays.deepHashCode(parameters);
     }
+
 
     @Override
     public int hashCode() {
