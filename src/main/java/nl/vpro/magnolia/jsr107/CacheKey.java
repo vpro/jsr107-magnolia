@@ -2,6 +2,7 @@ package nl.vpro.magnolia.jsr107;
 
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import javax.cache.annotation.GeneratedCacheKey;
@@ -9,13 +10,13 @@ import javax.cache.annotation.GeneratedCacheKey;
 import org.jsr107.ri.annotations.DefaultGeneratedCacheKey;
 
 /**
- * Like {@link DefaultGeneratedCacheKey} but with toString
+ * Like {@link DefaultGeneratedCacheKey} but with toString, also it only accepts serializable parameters.
  */
 @ToString
 public class CacheKey implements GeneratedCacheKey {
     private static final long serialVersionUID = 1L;
 
-    private final Object[] parameters;
+    private final Serializable[] parameters;
     private final int hashCode;
 
     /**
@@ -23,7 +24,7 @@ public class CacheKey implements GeneratedCacheKey {
      *
      * @param parameters the paramters to use
      */
-    public CacheKey(Object[] parameters) {
+    public CacheKey(Serializable[] parameters) {
         this.parameters = parameters;
         this.hashCode = Arrays.deepHashCode(parameters);
     }
@@ -50,4 +51,4 @@ public class CacheKey implements GeneratedCacheKey {
         CacheKey other = (CacheKey) obj;
         return Arrays.deepEquals(this.parameters, other.parameters);
     }
-}
+    }

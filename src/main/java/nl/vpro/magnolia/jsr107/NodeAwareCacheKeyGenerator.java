@@ -3,6 +3,7 @@ package nl.vpro.magnolia.jsr107;
 import info.magnolia.jcr.util.NodeUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,18 +24,20 @@ public class NodeAwareCacheKeyGenerator implements CacheKeyGenerator {
 
     @Override
     public GeneratedCacheKey generateCacheKey(CacheKeyInvocationContext<? extends Annotation> cacheKeyInvocationContext) {
-        List<Object> result = new ArrayList<>();
+        List<Serializable> result = new ArrayList<>();
         for (CacheInvocationParameter cacheInvocationParameter : cacheKeyInvocationContext.getKeyParameters()) {
             Object value = cacheInvocationParameter.getValue();
             if (value instanceof Node) {
                 Node node = (Node) value;
                 result.add(NodeUtil.getPathIfPossible(node));
+            } else if (value instanceof Serializable) {
+                result.add((Serializable) value);
             } else {
-                result.add(value);
+                throw new IllegalArgumentException("Not serializable " + value);
             }
         }
 
-        return new CacheKey(result.toArray(new Object[result.size()]));
+        return new CacheKey(result.toArray(new Serializable[result.size()]));
     }
 
 
