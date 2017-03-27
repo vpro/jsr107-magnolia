@@ -97,6 +97,6 @@ The cache settings are in this way still visible in the JCR-tree, and can be mod
 
 
 ```
-##MgnlCacheManager
+## MgnlCacheManager
 
 The MgnlCacheManager implementation of javax.cache.CacheManager contains a few utility which may come in usefull when interaction with caches. E.g. utilities to get existing values from the caches, or all keys, which can be useful when activily refreshing entries in the cache (e.g. using @CachePut)
