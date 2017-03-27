@@ -1,11 +1,10 @@
 package nl.vpro.magnolia.jsr107;
 
-import lombok.ToString;
+import info.magnolia.jcr.util.NodeUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.cache.annotation.CacheInvocationParameter;
@@ -13,9 +12,6 @@ import javax.cache.annotation.CacheKeyGenerator;
 import javax.cache.annotation.CacheKeyInvocationContext;
 import javax.cache.annotation.GeneratedCacheKey;
 import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
-import org.jsr107.ri.annotations.DefaultGeneratedCacheKey;
 
 /**
  * A {@link CacheKeyGenerator} that maps every {@link Node} argument to its path, which makes it {@link java.io.Serializable}
@@ -31,12 +27,8 @@ public class NodeAwareCacheKeyGenerator implements CacheKeyGenerator {
         for (CacheInvocationParameter cacheInvocationParameter : cacheKeyInvocationContext.getKeyParameters()) {
             Object value = cacheInvocationParameter.getValue();
             if (value instanceof Node) {
-                try {
-                    result.add(((Node) value).getPath());
-                } catch (RepositoryException e) {
-                    log.error(e.getMessage(), e);
-                    result.add(value);
-                }
+                Node node = (Node) value;
+                result.add(NodeUtil.getPathIfPossible(node));
             } else {
                 result.add(value);
             }
@@ -48,46 +40,3 @@ public class NodeAwareCacheKeyGenerator implements CacheKeyGenerator {
 
 }
 
-/**
- * Like {@link DefaultGeneratedCacheKey} but with toString
- */
-@ToString
-class CacheKey implements GeneratedCacheKey {
-    private static final long serialVersionUID = 1L;
-
-    private final Object[] parameters;
-    private final int hashCode;
-
-    /**
-     * Constructs a default cache key
-     *
-     * @param parameters the paramters to use
-     */
-    public CacheKey(Object[] parameters) {
-        this.parameters = parameters;
-        this.hashCode = Arrays.deepHashCode(parameters);
-    }
-
-    @Override
-    public int hashCode() {
-        return this.hashCode;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        if (this.hashCode != obj.hashCode()) {
-            return false;
-        }
-        CacheKey other = (CacheKey) obj;
-        return Arrays.deepEquals(this.parameters, other.parameters);
-    }
-}
