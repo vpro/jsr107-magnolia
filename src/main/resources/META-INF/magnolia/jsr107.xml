@@ -4,7 +4,7 @@
   <name>jsr107</name>
   <displayName>Provides jsr 107 cache annotations</displayName>
   <class>nl.vpro.magnolia.jsr107.JSR107Module</class>
-  <version>1.11</version>
+  <version>1.12</version>
   <components>
     <id>main</id>
     <configurer>
