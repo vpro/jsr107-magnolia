@@ -37,7 +37,7 @@ public class NodeAwareCacheKeyGenerator implements CacheKeyGenerator {
             }
         }
 
-        return new CacheKey(result.toArray(new Serializable[result.size()]));
+        return new SerializableGeneratedCacheKey(result.toArray(new Serializable[result.size()]));
     }
 
 

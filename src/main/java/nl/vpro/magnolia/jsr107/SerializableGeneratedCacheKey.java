@@ -7,13 +7,12 @@ import java.util.Arrays;
 
 import javax.cache.annotation.GeneratedCacheKey;
 
-import org.jsr107.ri.annotations.DefaultGeneratedCacheKey;
 
 /**
- * Like {@link DefaultGeneratedCacheKey} but with toString, also it only accepts serializable parameters.
+ * Like {@link org.jsr107.ri.annotations.DefaultGeneratedCacheKey} but with toString, also it only accepts serializable parameters.
  */
 @ToString
-public class CacheKey implements GeneratedCacheKey {
+public class SerializableGeneratedCacheKey implements GeneratedCacheKey {
     private static final long serialVersionUID = 1L;
 
     private final Serializable[] parameters;
@@ -24,7 +23,7 @@ public class CacheKey implements GeneratedCacheKey {
      *
      * @param parameters the paramters to use
      */
-    public CacheKey(Serializable... parameters) {
+    public SerializableGeneratedCacheKey(Serializable... parameters) {
         this.parameters = parameters;
         this.hashCode = Arrays.deepHashCode(parameters);
     }
@@ -49,7 +48,7 @@ public class CacheKey implements GeneratedCacheKey {
         if (this.hashCode != obj.hashCode()) {
             return false;
         }
-        CacheKey other = (CacheKey) obj;
+        SerializableGeneratedCacheKey other = (SerializableGeneratedCacheKey) obj;
         return Arrays.deepEquals(this.parameters, other.parameters);
     }
     }
