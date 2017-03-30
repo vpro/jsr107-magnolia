@@ -1,9 +1,8 @@
 package nl.vpro.magnolia.jsr107;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.*;
 import java.util.Optional;
 
 /**
@@ -11,6 +10,7 @@ import java.util.Optional;
  * @author Michiel Meeuwissen
  * @since 1.2
  */
+@Slf4j
 class CacheValue<V> implements Serializable {
 
     static <V> CacheValue<V> of(V value) {
@@ -37,6 +37,13 @@ class CacheValue<V> implements Serializable {
         if (value instanceof Optional) {
             out.writeObject(Optional.class);
             out.writeObject(((Optional) value).orElse(null));
+        } else if (value instanceof Throwable) {
+            try {
+                out.writeObject(value);
+            } catch(NotSerializableException nse) {
+                log.warn(nse.getClass() + " " + nse.getMessage());
+                out.writeObject(new SerializableException(nse.getMessage()));
+            }
         } else {
             out.writeObject(value);
         }
