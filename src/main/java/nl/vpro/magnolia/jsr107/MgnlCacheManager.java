@@ -26,10 +26,8 @@ import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
 
 import org.aopalliance.intercept.MethodInvocation;
-import org.jsr107.ri.annotations.CacheParameterDetails;
-import org.jsr107.ri.annotations.CacheResultMethodDetails;
-import org.jsr107.ri.annotations.DefaultGeneratedCacheKey;
-import org.jsr107.ri.annotations.InternalCacheInvocationContext;
+import org.apache.commons.collections.map.HashedMap;
+import org.jsr107.ri.annotations.*;
 import org.jsr107.ri.annotations.guice.CacheLookupUtil;
 
 /**
@@ -45,6 +43,35 @@ public class MgnlCacheManager implements CacheManager {
     private final CacheFactoryProvider factory;
 
     private final CacheLookupUtil cacheLookupUtil;
+    
+    private static final Map<Class<? extends CacheKeyGenerator>, Function<GeneratedCacheKey, Object[]>> 
+    PARAMETER_GETTER = new HashMap<>();
+    
+    static {
+        PARAMETER_GETTER.put(MgnlObjectsAwareCacheKeyGenerator.class, 
+            createGetter(SerializableGeneratedCacheKey.class, "parameters"));
+
+        PARAMETER_GETTER.put(DefaultCacheKeyGenerator.class, 
+            createGetter(DefaultGeneratedCacheKey.class, "parameters"));
+    }
+    
+    private static Function<GeneratedCacheKey, Object[]> createGetter(Class<?> keyClass, String field) {
+        Field parameters;
+        try {
+            parameters = keyClass.getDeclaredField(field);
+            parameters.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+
+        return o -> {
+            try {
+                return (Object[]) parameters.get(o);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
 
     @Inject
     public MgnlCacheManager(CacheFactoryProvider factory, CacheLookupUtil util) {
@@ -174,13 +201,8 @@ public class MgnlCacheManager implements CacheManager {
         InternalCacheInvocationContext<? extends Annotation> cacheInvocationContext = cacheLookupUtil.getCacheInvocationContext(invocation);
         AdaptedCache<Object, Object> cache = (AdaptedCache) cacheResolver.resolveCache(cacheInvocationContext);
         Iterator<Cache.Entry<Object, Object>> iterator = cache.iterator();
-        Field parameters;
-        try {
-            parameters = DefaultGeneratedCacheKey.class.getDeclaredField("parameters");
-            parameters.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
+        final Function<GeneratedCacheKey, Object[]> objectGetter = PARAMETER_GETTER.get(methodDetails.getCacheKeyGenerator().getClass());
+
         return new Iterator<Object[]>() {
             @Override
             public boolean hasNext() {
@@ -189,15 +211,9 @@ public class MgnlCacheManager implements CacheManager {
 
             @Override
             public Object[] next() {
-                try {
-                    DefaultGeneratedCacheKey key = (DefaultGeneratedCacheKey) iterator.next().getKey();
-                    Object[] params = (Object[]) parameters.get(key);
-                    return params;
-                } catch (IllegalAccessException e) {
-                    log.error(e.getMessage(), e);
-                    throw new RuntimeException(e);
-                }
-
+                GeneratedCacheKey key = (GeneratedCacheKey) iterator.next().getKey();
+                Object[] params = objectGetter.apply(key);
+                return params;
             }
         };
     }
@@ -209,7 +225,7 @@ public class MgnlCacheManager implements CacheManager {
     }
 
     protected Method getMethod(Class<?> clazz, String methodName, Class<?>... arguments) {
-        Method method = null;
+        Method method;
 
         List<Method> candidates = new ArrayList<>();
         OUTER:

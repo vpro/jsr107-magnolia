@@ -1,36 +1,26 @@
 package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.module.cache.CacheFactory;
-import info.magnolia.module.cache.inject.CacheFactoryProvider;
-import info.magnolia.module.cache.mbean.CacheMonitor;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.cache.CacheManager;
 import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CachePut;
 import javax.cache.annotation.CacheResult;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jsr107.ri.annotations.DefaultGeneratedCacheKey;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-
 import nl.vpro.magnolia.jsr107.mock.MockCacheFactory;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Michiel Meeuwissen
  * @since 1.0
  */
-public class CacheConfigurerTest {
+public class CacheConfigurerTest extends AbstractJSR107Test {
 
 
     public static class TestClass {
@@ -94,25 +84,10 @@ public class CacheConfigurerTest {
         }
     }
     TestClass instance;
-    MgnlCacheManager cacheManager;
-    MockCacheFactory f;
-
+   
     @Before
     public void setup() {
-
-        Injector injector = Guice.createInjector(new CacheConfigurer(), new AbstractModule() {
-            @Override
-            protected void configure() {
-                f = new MockCacheFactory(true);
-                CacheFactoryProvider fp = mock(CacheFactoryProvider.class);
-                when(fp.get()).thenReturn(f);
-                binder().bind(CacheFactoryProvider.class).toInstance(fp);
-                binder().bind(CacheMonitor.class).toInstance(mock(CacheMonitor.class));
-            }
-        });
-
         instance = injector.getInstance(TestClass.class);
-        cacheManager = (MgnlCacheManager) injector.getInstance(CacheManager.class);
     }
 
     @Test
