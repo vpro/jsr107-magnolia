@@ -6,15 +6,6 @@ import info.magnolia.module.cache.inject.CacheFactoryProvider;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.annotation.CacheKeyGenerator;
@@ -24,9 +15,16 @@ import javax.cache.annotation.GeneratedCacheKey;
 import javax.cache.configuration.Configuration;
 import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.collections.map.HashedMap;
 import org.jsr107.ri.annotations.*;
 import org.jsr107.ri.annotations.guice.CacheLookupUtil;
 
