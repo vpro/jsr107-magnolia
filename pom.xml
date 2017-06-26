@@ -42,12 +42,16 @@
 
   <properties>
     <jcr.version>2.0</jcr.version>
-    <slf4j.version>1.7.22</slf4j.version>
-    <magnolia.version>5.5.3</magnolia.version>
-    <magnolia.cache.version>5.5.3</magnolia.cache.version>
+    <slf4j.version>1.7.25</slf4j.version>
+
+    <magnolia.version>5.5.4</magnolia.version>
+    <magnolia.cache.version>5.5.4</magnolia.cache.version>
+
+    <ehcache.version>3.3.1</ehcache.version> <!-- should be in sync with version of magnolia.cache -->
     <junit.version>4.12</junit.version>
-    <mockito.version>2.7.20</mockito.version>
+    <mockito.version>2.8.47</mockito.version>
     <lombok.version>1.16.16</lombok.version>
+
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -121,13 +125,8 @@
     </dependency>
     <dependency>
       <groupId>org.ehcache</groupId>
-      <artifactId>jcache</artifactId>
-      <version>1.0.1</version>
-    </dependency>
-    <dependency>
-      <groupId>net.sf.ehcache</groupId>
       <artifactId>ehcache</artifactId>
-      <version>2.10.0</version> <!-- synced version with magnolia's -->
+      <version>${ehcache.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -151,7 +150,7 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.6.2</version>
+      <version>3.8.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
