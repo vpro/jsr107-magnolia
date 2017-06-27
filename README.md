@@ -74,8 +74,8 @@ If you use an 'exception cache' too, you may want to configure this separately. 
  @CacheResult(cacheKeyGenerator = ImageCacheKey.class, cacheName = ASSET_LINKS_CACHE, exceptionCacheName = ASSET_LINKS_CACHE + "-exceptions")
     @Defaults(
         overrideOnUpdate = true,
-        exceptionCacheSettings = @DefaultCacheSettings(maxElementsInMemory = 200, timeToLiveSeconds = 300, timeToIdleSeconds = 300),
-        cacheSettings = @DefaultCacheSettings(maxElementsInMemory = 2000, timeToLiveSeconds = 3600, timeToIdleSeconds = 3600)
+        exceptionCacheSettings = @DefaultCacheSettings(maxElementsInMemory = 200, timeToLiveSeconds = 300),
+        cacheSettings = @DefaultCacheSettings(maxElementsInMemory = 2000, timeToLiveSeconds = 3600)
     )
     @Override
    public String getAssetLink(Image image, String variation) {
@@ -92,8 +92,7 @@ The cache settings are in this way still visible in the JCR-tree, and can be mod
                 .overflowToDisk(true)
                 .diskSpoolBufferSizeMB(500)
                 .maxElementsInMemory(200)
-                .diskExpiryThreadInterval(Duration.ofHours(24))
-                .overflowToDisk(true)
+                .diskExpiryThreadInterval(Duration.ofHours(24))              
             )
             .overrideOnUpdate(true)
             .build());
