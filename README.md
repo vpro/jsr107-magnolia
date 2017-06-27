@@ -35,12 +35,15 @@ Or you can add this to your pom.xml
 <dependency>
   <groupId>nl.vpro</groupId>
   <artifactId>jsr107-magnolia</artifactId>
-  <version>1.12</version>
+  <version>1.14</version>
 </dependency>
 ```
 ### Configuration
-You can configure the created cache like so in the JCR-tree:
+For versions older then 1.14 caches were configure like so in the JCR-tree:
 ![cache configuration](cache-config.png?raw=true "Cache configuration")
+From 1.14 onwards as Magnolia 5.5.4 uses ehcache3 so the configuration has changed and looks like this:
+![cache configuration](cache-config-ehcache3.png?raw=true "Ehcache 3 configuration")
+
 
 Cache-configurations can be automaticly created using tasks on the version handler of your module.
 E.g. like this:

@@ -5,14 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ClassUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Objects;
-
-import org.apache.commons.lang3.ClassUtils;
 
 /**
  * See https://documentation.magnolia-cms.com/display/DOCS/Ehcache+module
@@ -80,6 +79,8 @@ public class CacheSettings {
         Builder() {
             super();
         }
+
+        @Deprecated
         public CacheSettings.Builder timeToIdle(Duration duration) {
             return timeToIdleSeconds(duration == null ? null : (int) duration.toMillis() / 1000);
         }
@@ -88,6 +89,7 @@ public class CacheSettings {
             return timeToLiveSeconds(duration == null ? null : (int) duration.toMillis() / 1000);
         }
 
+        @Deprecated
         public CacheSettings.Builder diskExpiryThreadInterval(Duration duration) {
             return diskExpiryThreadIntervalSeconds(duration == null ? null : (int) duration.toMillis() / 1000);
 
@@ -160,13 +162,17 @@ public class CacheSettings {
     /**
      * Sets maximum number of objects maintained in the DiskStore. The default value of zero means unlimited.
      */
+    @Deprecated
     int maxElementsOnDisk;
+
+    int maxSizeOnDiskMB;
     /**
      * Policy is enforced upon reaching the maxElementsInMemory limit. Available policies:
      Least Recently Used (specified as LRU)
      First In First Out (specified as FIFO)
      Less Frequently Used (specified as LFU)
      */
+    @Deprecated
     EvictionPolicy memoryStoreEvictionPolicy;
 
     /**
@@ -176,6 +182,7 @@ public class CacheSettings {
     /**
      * Optional attribute. Sets max idle time between accesses for an element before it expires. Only used if the element is not eternal. A value of 0 means that an Element can idle indefinitely.
      */
+    @Deprecated
     Integer timeToIdleSeconds;
     /**
      * Sets lifespan for an element. Only used if the element is not eternal. Optional attribute. A value of 0 means an Element can live for infinity
@@ -184,10 +191,12 @@ public class CacheSettings {
     /**
      * Number of seconds between runs of the disk expiry thread.
      */
+    @Deprecated
     Integer diskExpiryThreadIntervalSeconds;
     /**
      * Size to allocate to DiskStore for a spool buffer. Writes are made to this area and then asynchronously written to disk. Default: 30MB. Each spool buffer is used only by its cache. If OutOfMemory errors, you may need to lower this value. To improve DiskStore performance consider increasing it. Trace level logging in the DiskStore will show if put back ups are occurring.
      */
+    @Deprecated
     Integer diskSpoolBufferSizeMB;
     /**
      * Instructs Ehcache to wait the specified time in milliseconds before attempting to cache the request. Create the blockingTiemout property in the tree at the same level where the EhCacheFactory class is defined, not inside the defaultCacheConfiguration node.

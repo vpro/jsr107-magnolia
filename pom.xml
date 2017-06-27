@@ -166,9 +166,8 @@
 
     <dependency>
       <groupId>info.magnolia.cache</groupId>
-      <artifactId>magnolia-cache-ehcache</artifactId>
+      <artifactId>magnolia-cache-ehcache3</artifactId>
       <version>${magnolia.cache.version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>info.magnolia</groupId>

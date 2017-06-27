@@ -1,25 +1,28 @@
 package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.jcr.util.NodeTypes;
-import info.magnolia.jcr.util.PropertyUtil;
+import info.magnolia.jcr.util.NodeUtil;
 import info.magnolia.module.InstallContext;
+import info.magnolia.module.cache.ehcache3.configuration.EhCache3ConfigurationBuilder;
+import info.magnolia.module.cache.ehcache3.configuration.EhCache3Expiry;
+import info.magnolia.module.cache.ehcache3.configuration.Ehcache3ResourcePoolBuilder;
+import info.magnolia.module.cache.ehcache3.configuration.Ehcache3ResourcePoolsBuilder;
 import info.magnolia.module.delta.AbstractRepositoryTask;
 import info.magnolia.module.delta.TaskExecutionException;
 import info.magnolia.repository.RepositoryConstants;
 import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import org.ehcache.config.ResourceType;
+import org.ehcache.config.units.EntryUnit;
+import org.ehcache.config.units.MemoryUnit;
 
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import java.io.Serializable;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Michiel Meeuwissen
@@ -36,7 +39,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
     public CreateCacheConfigurationTask(
         String name,
         @Singular("cacheSettings")
-        List<CacheSettings> cacheSettings,
+            List<CacheSettings> cacheSettings,
         boolean overrideOnUpdate
     ) {
         super("Cache configuration for " + name, "Installs cache configuration for " + name);
@@ -58,6 +61,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
         return cacheSettings[0];
 
     }
+
     @Override
     protected void doExecute(InstallContext installContext) throws RepositoryException, TaskExecutionException {
         final Session session = installContext.getJCRSession(RepositoryConstants.CONFIG);
@@ -70,15 +74,60 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
 
     private void createCacheConfigurationNode(Session session) throws RepositoryException {
         createAndFill(session, nodeName, (node) -> {
-            for (Field f : CacheSettings.class.getDeclaredFields()) {
-                if (!Modifier.isStatic(f.getModifiers())) {
-                    f.setAccessible(true);
-                    setProperty(node, f, cacheSettings);
+            try {
+                node.setProperty("class", EhCache3ConfigurationBuilder.class.getName());
+                node.setProperty("keyType", Serializable.class.getName());
+                node.setProperty("valueType", Serializable.class.getName());
+
+                // expiry
+                Node expiry = NodeUtil.createPath(node, "expiry", NodeTypes.ContentNode.NAME);
+                expiry.setProperty("class", EhCache3Expiry.class.getName());
+                for (CacheSettings settings : cacheSettings) {
+                    if (!settings.isEternal() && settings.getTimeToLiveSeconds() != null) {
+                        expiry.setProperty("create", Long.valueOf(settings.getTimeToLiveSeconds()));
+                    }
                 }
+
+                // resourcePoolsBuilder
+                Node resourcePoolsBuilder = NodeUtil.createPath(node, "resourcePoolsBuilder", NodeTypes.ContentNode.NAME);
+                resourcePoolsBuilder.setProperty("class", Ehcache3ResourcePoolsBuilder.class.getName());
+
+                // resourcePoolsBuilder/pools
+                Node resourcePools = NodeUtil.createPath(resourcePoolsBuilder, "pools", NodeTypes.ContentNode.NAME);
+
+                for (CacheSettings settings : cacheSettings) {
+                    // resourcePoolsBuilder/pools/heap
+                    final Node heap = NodeUtil.createPath(resourcePools, "heap", NodeTypes.ContentNode.NAME);
+                    heap.setProperty("class", Ehcache3ResourcePoolBuilder.class.getName());
+                    heap.setProperty("resourceType", ResourceType.Core.HEAP.name());
+                    heap.setProperty("resourceUnit", EntryUnit.ENTRIES.name());
+                    heap.setProperty("size", (long) settings.getMaxElementsInMemory());
+
+                    // resourcePoolsBuilder/pools/disk
+                    if (settings.isOverflowToDisk() && (settings.getMaxSizeOnDiskMB() > 0 || settings.getMaxElementsOnDisk() > 0)) {
+                        final Node disk = resourcePools.addNode("disk", NodeTypes.ContentNode.NAME);
+                        disk.setProperty("class", Ehcache3ResourcePoolBuilder.class.getName());
+                        disk.setProperty("persistent", Boolean.TRUE);
+                        disk.setProperty("resourceType", ResourceType.Core.DISK.name());
+                        disk.setProperty("resourceUnit", MemoryUnit.MB.name());
+                        Long size = 1000L;
+                        if (settings.getMaxSizeOnDiskMB() > 0) {
+                            size = (long) settings.getMaxSizeOnDiskMB();
+                        } else {
+                            if (settings.getMaxElementsOnDisk() > 0) {
+                                // Size estimate taken from : info.magnolia.module.cache.ehcache3.setup.MigrateEhCache2ConfigurationTask.java:137
+                                size = settings.getMaxElementsOnDisk() / 10000L;
+                            }
+                        }
+                        disk.setProperty("size", size);
+                    }
+                }
+
+            } catch (RepositoryException e) {
+                log.error("Unable to create/update settings of {} : {}", node, e.getMessage());
             }
         });
     }
-
 
     private void createAndFill(Session session, String path, Consumer<Node> consume) throws RepositoryException {
         Node node;
@@ -108,37 +157,5 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
         } catch (RepositoryException re) {
             throw re;
         }
-    }
-
-    protected void setProperty(Node node, Field property, CacheSettings... cacheSettingss) {
-        try {
-            Object o = null;
-            for (CacheSettings cacheSettings : cacheSettingss) {
-                o = property.get(cacheSettings);
-                if (o instanceof Enum) {
-                    o = ((Enum) o).name();
-                }
-                if (o != null) {
-                    break;
-                }
-            }
-            String name = property.getName();
-            if (o != null) {
-                log.info("Set {}/@{}={}", node.getPath(), name, o);
-                PropertyUtil.setProperty(node, name, o);
-            } else {
-                if (PropertyUtil.getPropertyOrNull(node,  name) != null) {
-                    log.info("Unset {}/@{}", node.getPath(), name);
-                    PropertyUtil.setProperty(node, name, null);
-                }
-            }
-
-        } catch (IllegalArgumentException | IllegalAccessException | RepositoryException e) {
-            log.error("For " + property + " of " +
-                Arrays.stream(cacheSettings).map(Object::toString)
-                .collect(Collectors.joining(", ")) +
-                " to set on " + node + " :" + e.getMessage(), e);
-        }
-
     }
 }
