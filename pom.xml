@@ -4,7 +4,7 @@
   <groupId>nl.vpro</groupId>
   <artifactId>jsr107-magnolia</artifactId>
   <name>JSR107-Magnolia</name>
-  <version>1.14</version>
+  <version>1.15-SNAPSHOT</version>
   <inceptionYear>2016</inceptionYear>
   <description>JSR-107 caching for the Magnolia CMS</description>
   <url>https://github.com/vpro/jsr107-magnolia</url>
@@ -37,7 +37,7 @@
     <connection>scm:git:git://git@github.com/vpro/jsr107-magnolia.git</connection>
     <developerConnection>scm:git:git@github.com:vpro/jsr107-magnolia.git</developerConnection>
     <url>https://github.com/vpro/jsr107-magnolia</url>
-    <tag>1.14</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
