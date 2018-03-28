@@ -12,6 +12,7 @@ import static org.junit.Assert.assertNull;
  * @author Michiel Meeuwissen
  * @since 1.2
  */
+@SuppressWarnings("unchecked")
 public class CacheValueTest {
 
     @Test
