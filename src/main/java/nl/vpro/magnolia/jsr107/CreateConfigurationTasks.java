@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.cache.annotation.CacheResult;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,7 +27,34 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class CreateConfigurationTasks {
 
-    static final String PATH = "/modules/cache/config/cacheFactory/delegateFactories/ehcache3/caches";
+    static final String[] PATHS = {
+        "/modules/cache/config/cacheFactory/delegateFactories/ehcache3/caches", // version >= 5.5.5
+        "/modules/cache/config/cacheFactory/caches"                             // version < 5.5.5
+    };
+
+
+    /**
+     * Returns the path which contains the cache configuration
+     * @since 1.15
+     */
+    public static Node getPath(Session session) throws RepositoryException {
+        RepositoryException first = null;
+        for(String proposal : PATHS) {
+            try {
+                return session.getNode(proposal);
+            } catch (RepositoryException re) {
+                if (first == null) {
+                    first = re;
+                }
+                log.warn("{}: {}, falling back to backwards compatibility", proposal, re.getMessage());
+            }
+
+        }
+        if (first == null) {
+            throw new IllegalStateException();
+        }
+        throw first;
+    }
 
     /**
      * Generates tasks to create (default) configuration for the caches provided by a list of beans.

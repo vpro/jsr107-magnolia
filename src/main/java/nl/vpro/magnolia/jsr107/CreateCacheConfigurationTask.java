@@ -12,17 +12,19 @@ import info.magnolia.module.delta.TaskExecutionException;
 import info.magnolia.repository.RepositoryConstants;
 import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
-import org.ehcache.config.ResourceType;
-import org.ehcache.config.units.EntryUnit;
-import org.ehcache.config.units.MemoryUnit;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.function.Consumer;
 
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import java.io.Serializable;
-import java.util.List;
-import java.util.function.Consumer;
+
+import org.ehcache.config.ResourceType;
+import org.ehcache.config.units.EntryUnit;
+import org.ehcache.config.units.MemoryUnit;
 
 /**
  * @author Michiel Meeuwissen
@@ -130,14 +132,16 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
     }
 
     private void createAndFill(Session session, String path, Consumer<Node> consume) throws RepositoryException {
+
+        String configPath  = CreateConfigurationTasks.getPath(session).getPath();
         Node node;
         try {
-            node = getOrCreatePath(session, CreateConfigurationTasks.PATH).getNode(path);
+            node = getOrCreatePath(session, configPath).getNode(path);
         } catch (PathNotFoundException pnf) {
             node = null;
         }
         if (node == null) {
-            node = session.getNode(CreateConfigurationTasks.PATH).addNode(path, NodeTypes.ContentNode.NAME);
+            node = session.getNode(configPath).addNode(path, NodeTypes.ContentNode.NAME);
             consume.accept(node);
             log.info("Created {}", node);
         } else {
