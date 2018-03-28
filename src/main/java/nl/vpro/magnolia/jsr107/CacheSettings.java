@@ -5,13 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ClassUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Objects;
+
+import org.apache.commons.lang3.ClassUtils;
 
 /**
  * See https://documentation.magnolia-cms.com/display/DOCS/Ehcache+module
@@ -46,7 +47,8 @@ public class CacheSettings {
         return
             runIfDefault(defaults, methodName, () -> {
                 Method method = Arrays.stream(Builder.class.getMethods())
-                    .filter(m -> m.getName().equals(methodName)).findFirst().orElse(null);
+                    .filter(m -> m.getName().equals(methodName)).findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Not found " + methodName));
                 try {
                     method.invoke(builder, (Object) null);
                 } catch (IllegalAccessException | InvocationTargetException e) {
