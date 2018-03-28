@@ -46,7 +46,7 @@ public class CreateConfigurationTasks {
                 if (first == null) {
                     first = re;
                 }
-                log.warn("{}: {}, falling back to backwards compatibility", proposal, re.getMessage());
+                log.warn("{}: {}, falling back to backwards compatibility", proposal, re.getClass().getName());
             }
 
         }
