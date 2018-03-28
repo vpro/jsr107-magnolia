@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class CreateConfigurationTasks {
 
-    static final String PATH = "/modules/cache/config/cacheFactory/caches";
+    static final String PATH = "/modules/cache/config/cacheFactory/delegateFactories/ehcache3/caches";
 
     /**
      * Generates tasks to create (default) configuration for the caches provided by a list of beans.
