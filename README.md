@@ -104,3 +104,32 @@ The cache settings are in this way still visible in the JCR-tree, and can be mod
 The `nl.vpro.magnolia.jsr107.MgnlCacheManager` implementation of `javax.cache.CacheManager` contains a few utility which may come in useful when interacting with caches. E.g. utilities to get existing values from the caches, or all keys, which can be used when activily refreshing entries in the cache (e.g. in conjection with `@javax.cache.annotation.CachePut`)
 
 A `MgnlCacheManager` can simply be obtained using `@Inject`.
+
+## Cache Event Listening
+
+Since version 1.16 we will also support cache listening. E.g.
+```java
+    @Inject
+    public MediaPlayerPageCache(
+        Provider<VtkUtil> vtkUtil,
+        ServerConfiguration serverConfiguration,
+        Provider<MgnlCacheManager> mgnlCacheManager,
+        @Named(SystemEventBus.NAME) EventBus systemEventBus
+) {
+        this.vtkUtil = vtkUtil;
+        this.serverConfiguration = serverConfiguration;
+        this.mgnlCacheManager = mgnlCacheManager;
+        systemEventBus.addHandler(ModulesStartedEvent.class, this::registerCacheEntryListener);
+    }
+
+
+    protected void registerCacheEntryListener(ModulesStartedEvent event) {
+        log.info("{}", event);
+        mgnlCacheManager.get().getCache(CACHE_NAME).registerCacheEntryListener(new MutableCacheEntryListenerConfiguration<>(
+            new FactoryBuilder.SingletonFactory<>(new Listener()),
+            new FactoryBuilder.SingletonFactory<>(e -> true),
+            false,
+            true));
+    }
+
+```
