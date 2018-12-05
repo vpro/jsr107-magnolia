@@ -34,12 +34,9 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     private final CacheManager cacheManager;
     private final Configuration<?, ?> configuration;
 
-    private final List<CacheEntryListenerConfiguration<K, V>> cacheEntryListenerConfigurations = new CopyOnWriteArrayList<>();
-    private final Map<CacheEntryListenerConfiguration<K, V>, CacheEntryCreatedListener<K, V>> createdListenerMap = new ConcurrentHashMap<>();
-    private final Map<CacheEntryListenerConfiguration<K, V>, CacheEntryUpdatedListener<K, V>> updatedListenerMap = new ConcurrentHashMap<>();
-    private final Map<CacheEntryListenerConfiguration<K, V>, CacheEntryRemovedListener<K, V>> removedListenerMap = new ConcurrentHashMap<>();
 
 
+    private static Map<String, Listeners<?, ?>> LISTENERS = new ConcurrentHashMap<>();
 
 
     public AdaptedCache(
@@ -48,8 +45,10 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         Configuration<?, ?> configuration
         ) {
         this.mgnlCache = mgnlCache;
+        LISTENERS.putIfAbsent(this.mgnlCache.getName(), new Listeners<>());
         this.cacheManager = manager;
         this.configuration = configuration;
+
 
     }
 
@@ -298,24 +297,26 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public void registerCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        cacheEntryListenerConfigurations.add(cacheEntryListenerConfiguration);
+        Listeners<K, V> listeners = getListeners();
+        listeners.cacheEntryListenerConfigurations.add(cacheEntryListenerConfiguration);
         CacheEntryListener<? super K, ? super V> cacheEntryListener = cacheEntryListenerConfiguration.getCacheEntryListenerFactory().create();
         if (cacheEntryListener instanceof CacheEntryCreatedListener) {
-            createdListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryCreatedListener<K, V>) cacheEntryListener);
+            listeners.createdListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryCreatedListener<K, V>) cacheEntryListener);
         }
 
         if (cacheEntryListener instanceof CacheEntryUpdatedListener) {
-            updatedListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryUpdatedListener<K, V>) cacheEntryListener);
+            listeners.updatedListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryUpdatedListener<K, V>) cacheEntryListener);
         }
         if (cacheEntryListener instanceof CacheEntryRemovedListener) {
-            removedListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryRemovedListener<K, V>) cacheEntryListener);
+            listeners.removedListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryRemovedListener<K, V>) cacheEntryListener);
         }
     }
 
     @Override
     public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        cacheEntryListenerConfigurations.remove(cacheEntryListenerConfiguration);
-        createdListenerMap.remove(cacheEntryListenerConfiguration);
+        Listeners<K, V> listeners = getListeners();
+        listeners.cacheEntryListenerConfigurations.remove(cacheEntryListenerConfiguration);
+        listeners.createdListenerMap.remove(cacheEntryListenerConfiguration);
     }
 
     @Override
@@ -325,7 +326,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @SafeVarargs
     protected final void handleEvents(CacheEntryEvent<? extends K, ? extends V>... events) {
-
+        Listeners<K, V> listeners = getListeners();
         List<CacheEntryEvent<? extends K, ? extends V>> created = new ArrayList<>();
         List<CacheEntryEvent<? extends K, ? extends V>> updated  = new ArrayList<>();
         List<CacheEntryEvent<? extends K, ? extends V>> removed  = new ArrayList<>();
@@ -346,20 +347,24 @@ class AdaptedCache<K, V> implements Cache<K, V> {
             }
         }
         if (! created.isEmpty()) {
-            for (CacheEntryCreatedListener<K, V> listener : createdListenerMap.values()) {
+            for (CacheEntryCreatedListener<K, V> listener : listeners.createdListenerMap.values()) {
                 listener.onCreated(created);
             }
         }
         if (! updated.isEmpty()) {
-            for (CacheEntryUpdatedListener<K, V> listener : updatedListenerMap.values()) {
+            for (CacheEntryUpdatedListener<K, V> listener : listeners.updatedListenerMap.values()) {
                 listener.onUpdated(updated);
             }
         }
         if (! removed.isEmpty()) {
-            for (CacheEntryRemovedListener<K, V> listener : removedListenerMap.values()) {
+            for (CacheEntryRemovedListener<K, V> listener : listeners.removedListenerMap.values()) {
                 listener.onRemoved(removed);
             }
         }
+    }
+
+    protected Listeners<K, V> getListeners() {
+        return (Listeners<K, V>) LISTENERS.get(getName());
     }
 
     protected final void removeAllEvent() {
@@ -377,32 +382,28 @@ class AdaptedCache<K, V> implements Cache<K, V> {
             @Override
             public V getOldValue() {
                 return oldValue.orNull();
+            }
 
-                }
+            @Override
+            public boolean isOldValueAvailable() {
+                return oldValue != null;
+            }
 
-                @Override
-                public boolean isOldValueAvailable() {
-                    return oldValue != null;
+            @Override
+            public K getKey() {
+                return key;
+            }
 
-                }
+            @Override
+            public V getValue() {
+                return null;
+            }
 
-                @Override
-                public K getKey() {
-                    return key;
+            @Override
+            public <T> T unwrap(Class<T> clazz) {
+                return null;
 
-                }
-
-                @Override
-                public V getValue() {
-                    return null;
-
-                }
-
-                @Override
-                public <T> T unwrap(Class<T> clazz) {
-                    return null;
-
-                }
+            }
         };
     }
 
@@ -442,5 +443,13 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
 
+
+    static final class Listeners<KK, VV> {
+        final List<CacheEntryListenerConfiguration<KK, VV>> cacheEntryListenerConfigurations = new CopyOnWriteArrayList<>();
+        final Map<CacheEntryListenerConfiguration<KK, VV>, CacheEntryCreatedListener<KK, VV>> createdListenerMap = new ConcurrentHashMap<>();
+        final Map<CacheEntryListenerConfiguration<KK, VV>, CacheEntryUpdatedListener<KK, VV>> updatedListenerMap = new ConcurrentHashMap<>();
+        final Map<CacheEntryListenerConfiguration<KK, VV>, CacheEntryRemovedListener<KK, VV>> removedListenerMap = new ConcurrentHashMap<>();
+
+    }
 
 }
