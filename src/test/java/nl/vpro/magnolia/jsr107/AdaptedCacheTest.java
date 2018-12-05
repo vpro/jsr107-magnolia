@@ -1,8 +1,13 @@
 package nl.vpro.magnolia.jsr107;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.*;
 
 import javax.cache.Cache;
+import javax.cache.configuration.FactoryBuilder;
+import javax.cache.configuration.MutableCacheEntryListenerConfiguration;
+import javax.cache.event.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Michiel Meeuwissen
  * @since 1.3
  */
+@Slf4j
 public class AdaptedCacheTest {
 
 	private AdaptedCache<String, String> cache;
@@ -224,7 +230,15 @@ public class AdaptedCacheTest {
 
     @Test
     public void registerCacheEntryListener() {
-        // UnsupportedOperationException(
+        cache.registerCacheEntryListener(new MutableCacheEntryListenerConfiguration<>(
+            new FactoryBuilder.SingletonFactory<>(new Listener()),
+            new FactoryBuilder.SingletonFactory<>(event -> true),
+            false,
+            true
+        ));
+        cache.put("bla", "blie");
+        cache.remove("bla");
+
 
     }
 
@@ -233,4 +247,37 @@ public class AdaptedCacheTest {
         // unsupported
     }
 
+
+    public static class Listener
+        implements
+        CacheEntryCreatedListener<String, String>,
+        CacheEntryExpiredListener<String, String>,
+        CacheEntryUpdatedListener<String, String>,
+        CacheEntryRemovedListener<String, String> {
+
+
+        @Override
+        public void onCreated(Iterable<CacheEntryEvent<? extends String, ? extends String>> cacheEntryEvents) throws CacheEntryListenerException {
+            log.info("created {}", cacheEntryEvents);
+
+        }
+
+        @Override
+        public void onExpired(Iterable<CacheEntryEvent<? extends String, ? extends String>> cacheEntryEvents) throws CacheEntryListenerException {
+            log.info("expired {}", cacheEntryEvents);
+
+        }
+
+        @Override
+        public void onRemoved(Iterable<CacheEntryEvent<? extends String, ? extends String>> cacheEntryEvents) throws CacheEntryListenerException {
+            log.info("removed {}", cacheEntryEvents);
+
+        }
+
+        @Override
+        public void onUpdated(Iterable<CacheEntryEvent<? extends String, ? extends String>> cacheEntryEvents) throws CacheEntryListenerException {
+            log.info("updated {}", cacheEntryEvents);
+        }
+    }
 }
+

@@ -4,11 +4,14 @@ import info.magnolia.module.cache.BlockingCache;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.CacheEntryListenerConfiguration;
 import javax.cache.configuration.Configuration;
+import javax.cache.event.*;
 import javax.cache.integration.CompletionListener;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
@@ -30,6 +33,14 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     private final info.magnolia.module.cache.Cache mgnlCache;
     private final CacheManager cacheManager;
     private final Configuration<?, ?> configuration;
+
+    private final List<CacheEntryListenerConfiguration<K, V>> cacheEntryListenerConfigurations = new CopyOnWriteArrayList<>();
+    private final Map<CacheEntryListenerConfiguration<K, V>, CacheEntryCreatedListener<K, V>> createdListenerMap = new ConcurrentHashMap<>();
+    private final Map<CacheEntryListenerConfiguration<K, V>, CacheEntryUpdatedListener<K, V>> updatedListenerMap = new ConcurrentHashMap<>();
+    private final Map<CacheEntryListenerConfiguration<K, V>, CacheEntryRemovedListener<K, V>> removedListenerMap = new ConcurrentHashMap<>();
+
+
+
 
     public AdaptedCache(
         info.magnolia.module.cache.Cache mgnlCache,
@@ -92,9 +103,42 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void put(K key, V value) {
-        mgnlCache.put(key, of(value));
+        final CacheValue<V> oldValue = ((CacheValue<V>) mgnlCache.getQuiet(key));
+        final CacheValue<V> newValue = of(value);
+        mgnlCache.put(key, newValue);
+        handleEvents(new CacheEntryEvent<K, V>(this, oldValue == null ? EventType.CREATED : EventType.UPDATED) {
+
+            @Override
+            public K getKey() {
+                return key;
+            }
+            @Override
+            public V getValue() {
+                return newValue.orNull();
+
+            }
+
+            @Override
+            public Object unwrap(Class clazz) {
+                return null;
+
+            }
+
+            @Override
+            public V getOldValue() {
+                return oldValue.orNull();
+
+            }
+
+            @Override
+            public boolean isOldValueAvailable() {
+                return oldValue != null;
+
+            }
+        });
     }
 
     @Override
@@ -125,7 +169,41 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     @Override
     public boolean remove(K key) {
         boolean result = containsKey(key);
-        mgnlCache.remove(key);
+        if (result) {
+            final CacheValue<V> oldValue = ((CacheValue<V>) mgnlCache.getQuiet(key));
+            mgnlCache.remove(key);
+            handleEvents(new CacheEntryEvent<K, V>(this, EventType.REMOVED) {
+                @Override
+                public V getOldValue() {
+                    return oldValue.orNull();
+
+                }
+
+                @Override
+                public boolean isOldValueAvailable() {
+                    return oldValue != null;
+
+                }
+
+                @Override
+                public K getKey() {
+                    return key;
+
+                }
+
+                @Override
+                public V getValue() {
+                    return null;
+
+                }
+
+                @Override
+                public <T> T unwrap(Class<T> clazz) {
+                    return null;
+
+                }
+            });
+        }
         return result;
 
     }
@@ -246,18 +324,70 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public void registerCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        throw new UnsupportedOperationException();
+        cacheEntryListenerConfigurations.add(cacheEntryListenerConfiguration);
+        CacheEntryListener<? super K, ? super V> cacheEntryListener = cacheEntryListenerConfiguration.getCacheEntryListenerFactory().create();
+        if (cacheEntryListener instanceof CacheEntryCreatedListener) {
+            createdListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryCreatedListener<K, V>) cacheEntryListener);
+        }
 
+        if (cacheEntryListener instanceof CacheEntryUpdatedListener) {
+            updatedListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryUpdatedListener<K, V>) cacheEntryListener);
+        }
+        if (cacheEntryListener instanceof CacheEntryRemovedListener) {
+            removedListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryRemovedListener<K, V>) cacheEntryListener);
+        }
     }
 
     @Override
     public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        throw new UnsupportedOperationException();
+        cacheEntryListenerConfigurations.remove(cacheEntryListenerConfiguration);
+        createdListenerMap.remove(cacheEntryListenerConfiguration);
     }
 
     @Override
     public String toString() {
         return "Adapted mgnl cache " + mgnlCache.getClass().getName() + " " + mgnlCache.getName();
+    }
+
+    @SafeVarargs
+    protected final void handleEvents(CacheEntryEvent<? extends K, ? extends V>... events) {
+
+        List<CacheEntryEvent<? extends K, ? extends V>> created = new ArrayList<>();
+        List<CacheEntryEvent<? extends K, ? extends V>> updated  = new ArrayList<>();
+        List<CacheEntryEvent<? extends K, ? extends V>> removed  = new ArrayList<>();
+        for (CacheEntryEvent<? extends K, ? extends V> event : events) {
+            switch(event.getEventType()) {
+                case CREATED:
+                    created.add(event);
+                    break;
+                case UPDATED:
+                    updated.add(event);
+                    break;
+                case REMOVED:
+                    removed.add(event);
+                    break;
+                default:
+                case EXPIRED:
+                    log.warn("Not supported");
+            }
+        }
+        if (! created.isEmpty()) {
+            for (CacheEntryCreatedListener<K, V> listener : createdListenerMap.values()) {
+                listener.onCreated(created);
+            }
+        }
+        if (! updated.isEmpty()) {
+            for (CacheEntryUpdatedListener<K, V> listener : updatedListenerMap.values()) {
+                listener.onUpdated(updated);
+            }
+        }
+        if (! removed.isEmpty()) {
+            for (CacheEntryRemovedListener<K, V> listener : removedListenerMap.values()) {
+                listener.onRemoved(removed);
+            }
+        }
+
+
     }
 
     @Override
