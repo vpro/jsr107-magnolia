@@ -240,6 +240,9 @@ public class AdaptedCacheTest {
         cache.remove("bla");
 
 
+        cache.put("pling", "blie");
+        cache.removeAll();
+
     }
 
     @Test

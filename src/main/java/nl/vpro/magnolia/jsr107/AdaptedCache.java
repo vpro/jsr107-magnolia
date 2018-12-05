@@ -172,37 +172,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         if (result) {
             final CacheValue<V> oldValue = ((CacheValue<V>) mgnlCache.getQuiet(key));
             mgnlCache.remove(key);
-            handleEvents(new CacheEntryEvent<K, V>(this, EventType.REMOVED) {
-                @Override
-                public V getOldValue() {
-                    return oldValue.orNull();
-
-                }
-
-                @Override
-                public boolean isOldValueAvailable() {
-                    return oldValue != null;
-
-                }
-
-                @Override
-                public K getKey() {
-                    return key;
-
-                }
-
-                @Override
-                public V getValue() {
-                    return null;
-
-                }
-
-                @Override
-                public <T> T unwrap(Class<T> clazz) {
-                    return null;
-
-                }
-            });
+            handleEvents(removeEvent(key, oldValue));
         }
         return result;
 
@@ -210,9 +180,11 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public boolean remove(K key, V oldValue) {
-        V compare = get(key);
-        if (compare != null && compare.equals(oldValue)) {
+        CacheValue<V> compare = ((CacheValue<V>) mgnlCache.getQuiet(key));
+
+        if (compare != null && Objects.equals(compare.orNull(), oldValue)) {
             mgnlCache.remove(key);
+            handleEvents(removeEvent(key, compare));
             return true;
         }
         return false;
@@ -268,11 +240,13 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public void removeAll() {
+        removeAllEvent();
         mgnlCache.clear();
     }
 
     @Override
     public void clear() {
+        removeAllEvent();
         mgnlCache.clear();
     }
 
@@ -386,8 +360,50 @@ class AdaptedCache<K, V> implements Cache<K, V> {
                 listener.onRemoved(removed);
             }
         }
+    }
 
+    protected final void removeAllEvent() {
+        List<CacheEntryEvent<? extends K, ? extends V>> events = new ArrayList<>();
+        for (Object  key : mgnlCache.getKeys()) {
+            CacheValue<V> value = ((CacheValue<V>) mgnlCache.getQuiet(key));
+            events.add(removeEvent((K) key, value));
 
+        }
+        handleEvents(events.toArray(new CacheEntryEvent[0]));
+    }
+
+    protected final CacheEntryEvent<K, V> removeEvent(K key, CacheValue<V> oldValue) {
+        return new CacheEntryEvent<K, V>(this, EventType.REMOVED) {
+            @Override
+            public V getOldValue() {
+                return oldValue.orNull();
+
+                }
+
+                @Override
+                public boolean isOldValueAvailable() {
+                    return oldValue != null;
+
+                }
+
+                @Override
+                public K getKey() {
+                    return key;
+
+                }
+
+                @Override
+                public V getValue() {
+                    return null;
+
+                }
+
+                @Override
+                public <T> T unwrap(Class<T> clazz) {
+                    return null;
+
+                }
+        };
     }
 
     @Override
