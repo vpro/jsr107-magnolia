@@ -22,6 +22,10 @@ import static nl.vpro.magnolia.jsr107.CacheValue.of;
 /**
  * Implements a {@link javax.cache.Cache} backed by a {@link info.magnolia.module.cache.Cache}
  *
+ * This class is basicly stateless, and only wraps stuff in the magnolia cache system.
+ *
+ * Because there are not cache events in magnolia, the listeners are stored staticly by cache name in this class see {@link #LISTENERS}.
+ *
  * @author Michiel Meeuwissen
  * @since 1.0
  */
@@ -34,9 +38,9 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     private final CacheManager cacheManager;
     private final Configuration<?, ?> configuration;
 
-
-
     private static Map<String, Listeners<?, ?>> LISTENERS = new ConcurrentHashMap<>();
+
+    private final Listeners<K, V> listeners;
 
 
     public AdaptedCache(
@@ -45,11 +49,9 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         Configuration<?, ?> configuration
         ) {
         this.mgnlCache = mgnlCache;
-        LISTENERS.putIfAbsent(this.mgnlCache.getName(), new Listeners<>());
         this.cacheManager = manager;
         this.configuration = configuration;
-
-
+        listeners = (Listeners<K, V>) LISTENERS.computeIfAbsent(this.mgnlCache.getName(), (name) -> new Listeners<K, V>(name));
     }
 
     @Override
@@ -105,39 +107,25 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     @SuppressWarnings("unchecked")
     @Override
     public void put(K key, V value) {
-        final CacheValue<V> oldValue = ((CacheValue<V>) mgnlCache.getQuiet(key));
+        final CacheValue<V> oldValue = listeners.has() ? ((CacheValue<V>) mgnlCache.getQuiet(key)) : null;
         final CacheValue<V> newValue = of(value);
         mgnlCache.put(key, newValue);
-        handleEvents(new CacheEntryEvent<K, V>(this, oldValue == null ? EventType.CREATED : EventType.UPDATED) {
-
-            @Override
-            public K getKey() {
-                return key;
-            }
-            @Override
-            public V getValue() {
-                return newValue.orNull();
-
-            }
-
-            @Override
-            public Object unwrap(Class clazz) {
-                return null;
-
-            }
-
-            @Override
-            public V getOldValue() {
-                return oldValue.orNull();
-
-            }
-
-            @Override
-            public boolean isOldValueAvailable() {
-                return oldValue != null;
-
-            }
-        });
+        if (listeners.has()) {
+            handleEvents(new AdapterCacheEntry<K, V>(this, oldValue == null ? EventType.CREATED : EventType.UPDATED, key) {
+                @Override
+                public V getValue() {
+                    return newValue.orNull();
+                }
+                @Override
+                public V getOldValue() {
+                    return oldValue.orNull();
+                }
+                @Override
+                public boolean isOldValueAvailable() {
+                    return oldValue != null;
+                }
+            });
+        }
     }
 
     @Override
@@ -171,7 +159,9 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         if (result) {
             final CacheValue<V> oldValue = ((CacheValue<V>) mgnlCache.getQuiet(key));
             mgnlCache.remove(key);
-            handleEvents(removeEvent(key, oldValue));
+            if (listeners.has()) {
+                handleEvents(removeEvent(key, oldValue));
+            }
         }
         return result;
 
@@ -183,7 +173,9 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
         if (compare != null && Objects.equals(compare.orNull(), oldValue)) {
             mgnlCache.remove(key);
-            handleEvents(removeEvent(key, compare));
+            if (listeners.has()) {
+                handleEvents(removeEvent(key, compare));
+            }
             return true;
         }
         return false;
@@ -232,9 +224,15 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public void removeAll(Set<? extends K> keys) {
+        List<CacheEntryEvent<K, V>> events = new ArrayList();
         for (K key : keys) {
-            remove(key);
+            final CacheValue<V> oldValue = ((CacheValue<V>) mgnlCache.getQuiet(key));
+            mgnlCache.remove(key);
+            if (listeners.has()) {
+                events.add(removeEvent(key, oldValue));
+            }
         }
+        handleEvents(events.toArray(new CacheEntryEvent[0]));
     }
 
     @Override
@@ -297,7 +295,6 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public void registerCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        Listeners<K, V> listeners = getListeners();
         listeners.cacheEntryListenerConfigurations.add(cacheEntryListenerConfiguration);
         CacheEntryListener<? super K, ? super V> cacheEntryListener = cacheEntryListenerConfiguration.getCacheEntryListenerFactory().create();
         if (cacheEntryListener instanceof CacheEntryCreatedListener) {
@@ -310,13 +307,12 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         if (cacheEntryListener instanceof CacheEntryRemovedListener) {
             listeners.removedListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryRemovedListener<K, V>) cacheEntryListener);
         }
+        listeners.cacheEntryEventFilter = cacheEntryListenerConfiguration.getCacheEntryEventFilterFactory().create();
     }
 
     @Override
     public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        Listeners<K, V> listeners = getListeners();
-        listeners.cacheEntryListenerConfigurations.remove(cacheEntryListenerConfiguration);
-        listeners.createdListenerMap.remove(cacheEntryListenerConfiguration);
+        listeners.remove(cacheEntryListenerConfiguration);
     }
 
     @Override
@@ -326,11 +322,13 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @SafeVarargs
     protected final void handleEvents(CacheEntryEvent<? extends K, ? extends V>... events) {
-        Listeners<K, V> listeners = getListeners();
         List<CacheEntryEvent<? extends K, ? extends V>> created = new ArrayList<>();
         List<CacheEntryEvent<? extends K, ? extends V>> updated  = new ArrayList<>();
         List<CacheEntryEvent<? extends K, ? extends V>> removed  = new ArrayList<>();
         for (CacheEntryEvent<? extends K, ? extends V> event : events) {
+            if (listeners.cacheEntryEventFilter != null && ! listeners.cacheEntryEventFilter.evaluate(event)) {
+                continue;
+            }
             switch(event.getEventType()) {
                 case CREATED:
                     created.add(event);
@@ -378,7 +376,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
     protected final CacheEntryEvent<K, V> removeEvent(K key, CacheValue<V> oldValue) {
-        return new CacheEntryEvent<K, V>(this, EventType.REMOVED) {
+        return new AdapterCacheEntry<K, V>(this, EventType.REMOVED, key) {
             @Override
             public V getOldValue() {
                 return oldValue.orNull();
@@ -388,24 +386,13 @@ class AdaptedCache<K, V> implements Cache<K, V> {
             public boolean isOldValueAvailable() {
                 return oldValue != null;
             }
-
-            @Override
-            public K getKey() {
-                return key;
-            }
-
             @Override
             public V getValue() {
                 return null;
             }
-
-            @Override
-            public <T> T unwrap(Class<T> clazz) {
-                return null;
-
-            }
         };
     }
+
 
     @Override
     public Iterator<Entry<K, V>> iterator() {
@@ -442,14 +429,55 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         };
     }
 
+    protected static abstract class AdapterCacheEntry<KK, VV> extends CacheEntryEvent<KK, VV> {
 
+        final String cache;
+        final KK key;
+
+        protected AdapterCacheEntry(Cache source, EventType eventType, KK key) {
+            super(source, eventType);
+            this.cache = source.getName();
+            this.key = key;
+        }
+        @Override
+        public KK getKey() {
+            return key;
+
+        }
+
+        @Override
+        public <T> T unwrap(Class<T> clazz) {
+            return null;
+
+        }
+        @Override
+        public String toString() {
+            return getEventType() + " " + cache + "#" + key;
+        }
+    }
 
     static final class Listeners<KK, VV> {
+        final String name;
         final List<CacheEntryListenerConfiguration<KK, VV>> cacheEntryListenerConfigurations = new CopyOnWriteArrayList<>();
         final Map<CacheEntryListenerConfiguration<KK, VV>, CacheEntryCreatedListener<KK, VV>> createdListenerMap = new ConcurrentHashMap<>();
         final Map<CacheEntryListenerConfiguration<KK, VV>, CacheEntryUpdatedListener<KK, VV>> updatedListenerMap = new ConcurrentHashMap<>();
         final Map<CacheEntryListenerConfiguration<KK, VV>, CacheEntryRemovedListener<KK, VV>> removedListenerMap = new ConcurrentHashMap<>();
+        CacheEntryEventFilter<? super KK, ? super VV> cacheEntryEventFilter;
 
+        Listeners(String name) {
+            this.name = name;
+        }
+
+        public boolean has() {
+            return ! cacheEntryListenerConfigurations.isEmpty();
+        }
+
+        public void remove(CacheEntryListenerConfiguration<KK, VV> cacheEntryListenerConfiguration) {
+            cacheEntryListenerConfigurations.remove(cacheEntryListenerConfiguration);
+            createdListenerMap.remove(cacheEntryListenerConfiguration);
+            updatedListenerMap.remove(cacheEntryListenerConfiguration);
+            removedListenerMap.remove(cacheEntryListenerConfiguration);
+        }
     }
 
 }

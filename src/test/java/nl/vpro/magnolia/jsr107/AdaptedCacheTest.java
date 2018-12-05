@@ -230,18 +230,45 @@ public class AdaptedCacheTest {
 
     @Test
     public void registerCacheEntryListener() {
-        cache.registerCacheEntryListener(new MutableCacheEntryListenerConfiguration<>(
-            new FactoryBuilder.SingletonFactory<>(new Listener()),
+        Listener listener = new Listener();
+        MutableCacheEntryListenerConfiguration<String, String> configuration = new MutableCacheEntryListenerConfiguration<>(
+            new FactoryBuilder.SingletonFactory<>(listener),
             new FactoryBuilder.SingletonFactory<>(event -> true),
             false,
             true
-        ));
+        );
+        cache.registerCacheEntryListener(configuration);
+
         cache.put("bla", "blie");
         cache.remove("bla");
+        assertThat(listener.received).containsExactly("CREATED test#bla", "REMOVED test#bla");
 
-
+        listener.received.clear();
         cache.put("pling", "blie");
         cache.removeAll();
+        assertThat(listener.received).containsExactly(
+            "CREATED test#pling",
+            "REMOVED test#pling");
+
+        cache.deregisterCacheEntryListener(configuration);;
+        listener.received.clear();
+        cache.put("pling", "blie");
+        assertThat(listener.received).containsExactly();
+        MutableCacheEntryListenerConfiguration<String, String> configurationWithListener = new MutableCacheEntryListenerConfiguration<>(
+            new FactoryBuilder.SingletonFactory<>(listener),
+            new FactoryBuilder.SingletonFactory<CacheEntryEventFilter<String, String>>(event -> event.getKey().startsWith("b")),
+            false,
+            true
+        );
+        cache.registerCacheEntryListener(configurationWithListener);
+
+        cache.put("abc", "1");
+        cache.put("bcd", "2");
+        cache.put("cde", "3");
+        cache.removeAll();
+        assertThat(listener.received).containsExactly("CREATED test#bcd", "REMOVED test#bcd");
+
+
 
     }
 
@@ -258,28 +285,32 @@ public class AdaptedCacheTest {
         CacheEntryUpdatedListener<String, String>,
         CacheEntryRemovedListener<String, String> {
 
+        final List<String> received = new ArrayList<>();
+
 
         @Override
         public void onCreated(Iterable<CacheEntryEvent<? extends String, ? extends String>> cacheEntryEvents) throws CacheEntryListenerException {
             log.info("created {}", cacheEntryEvents);
+            cacheEntryEvents.forEach((e) -> received.add(e.toString()));
 
         }
 
         @Override
         public void onExpired(Iterable<CacheEntryEvent<? extends String, ? extends String>> cacheEntryEvents) throws CacheEntryListenerException {
             log.info("expired {}", cacheEntryEvents);
-
+            cacheEntryEvents.forEach((e) -> received.add(e.toString()));
         }
 
         @Override
         public void onRemoved(Iterable<CacheEntryEvent<? extends String, ? extends String>> cacheEntryEvents) throws CacheEntryListenerException {
             log.info("removed {}", cacheEntryEvents);
-
+            cacheEntryEvents.forEach((e) -> received.add(e.toString()));
         }
 
         @Override
         public void onUpdated(Iterable<CacheEntryEvent<? extends String, ? extends String>> cacheEntryEvents) throws CacheEntryListenerException {
             log.info("updated {}", cacheEntryEvents);
+            cacheEntryEvents.forEach((e) -> received.add(e.toString()));
         }
     }
 }
