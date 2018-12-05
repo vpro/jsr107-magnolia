@@ -6,6 +6,15 @@ import info.magnolia.module.cache.inject.CacheFactoryProvider;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.annotation.CacheKeyGenerator;
@@ -15,14 +24,6 @@ import javax.cache.annotation.GeneratedCacheKey;
 import javax.cache.configuration.Configuration;
 import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.IntFunction;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.jsr107.ri.annotations.*;
@@ -34,6 +35,7 @@ import org.jsr107.ri.annotations.guice.CacheLookupUtil;
  * @author Michiel Meeuwissen
  * @since 1.0
  */
+@SuppressWarnings("unchecked")
 @Slf4j
 @ToString
 public class MgnlCacheManager implements CacheManager {
@@ -41,18 +43,18 @@ public class MgnlCacheManager implements CacheManager {
     private final CacheFactoryProvider factory;
 
     private final CacheLookupUtil cacheLookupUtil;
-    
-    private static final Map<Class<? extends CacheKeyGenerator>, Function<GeneratedCacheKey, Object[]>> 
+
+    private static final Map<Class<? extends CacheKeyGenerator>, Function<GeneratedCacheKey, Object[]>>
     PARAMETER_GETTER = new HashMap<>();
-    
+
     static {
-        PARAMETER_GETTER.put(MgnlObjectsAwareCacheKeyGenerator.class, 
+        PARAMETER_GETTER.put(MgnlObjectsAwareCacheKeyGenerator.class,
             createGetter(SerializableGeneratedCacheKey.class, "parameters"));
 
-        PARAMETER_GETTER.put(DefaultCacheKeyGenerator.class, 
+        PARAMETER_GETTER.put(DefaultCacheKeyGenerator.class,
             createGetter(DefaultGeneratedCacheKey.class, "parameters"));
     }
-    
+
     private static Function<GeneratedCacheKey, Object[]> createGetter(Class<?> keyClass, String field) {
         Field parameters;
         try {
@@ -129,7 +131,7 @@ public class MgnlCacheManager implements CacheManager {
      * Caches in magnolia are always blocking. Sometimes this is asking for trouble.
      */
     public <K, V> Cache<K, V> getUnblockingCache(String cacheName) {
-        return new UnblockingCache<K, V>(
+        return new UnblockingCache<>(
             new AdaptedCache<>(get().getCache(cacheName), this, MgnlCacheConfiguration.INSTANCE)
         );
     }
@@ -210,8 +212,7 @@ public class MgnlCacheManager implements CacheManager {
             @Override
             public Object[] next() {
                 GeneratedCacheKey key = (GeneratedCacheKey) iterator.next().getKey();
-                Object[] params = objectGetter.apply(key);
-                return params;
+                return objectGetter.apply(key);
             }
         };
     }
@@ -344,7 +345,7 @@ public class MgnlCacheManager implements CacheManager {
         }
 
         @Override
-        public Object proceed() throws Throwable {
+        public Object proceed() {
             throw new UnsupportedOperationException();
 
         }

@@ -229,7 +229,7 @@ public class AdaptedCacheTest {
     }
 
     @Test
-    public void registerCacheEntryListener() {
+    public void registerTestAndDeregisterCacheEntryListener() {
         Listener listener = new Listener();
         MutableCacheEntryListenerConfiguration<String, String> configuration = new MutableCacheEntryListenerConfiguration<>(
             new FactoryBuilder.SingletonFactory<>(listener),
@@ -268,17 +268,42 @@ public class AdaptedCacheTest {
         cache.removeAll();
         assertThat(listener.received).containsExactly("CREATED test#bcd", "REMOVED test#bcd");
 
-
-
     }
+
 
     @Test
-    public void deregisterCacheEntryListener() {
-        // unsupported
+    public void registerUpdatedListener() {
+        List<String> catcher = new ArrayList<>();
+        CacheEntryUpdatedListener<String, String> listener = cacheEntryEvents -> {
+            for (CacheEntryEvent<? extends String, ? extends String> e : cacheEntryEvents) {
+                if (e.isOldValueAvailable()) {
+                    catcher.add(e.getKey() + ":" + e.getOldValue() + " -> " + e.getValue());
+                } else {
+                    catcher.add(e.getKey() + ":-> " + e.getValue());
+                }
+            }
+        };
+        MutableCacheEntryListenerConfiguration<String, String> configuration = new MutableCacheEntryListenerConfiguration<>(
+            new FactoryBuilder.SingletonFactory<>(listener),
+            new FactoryBuilder.SingletonFactory<>(event -> true),
+            false,
+            true
+        );
+        cache.registerCacheEntryListener(configuration);
+        cache.put("A", "a");
+        cache.put("A", "b");
+        cache.put("B", "a");
+        cache.put("A", "c");
+        cache.put("A", null);
+        cache.put("A", "d");
+
+
+
+        assertThat(catcher).containsExactly("A:a -> b", "A:b -> c", "A:c -> null", "A:null -> d");
     }
 
 
-    public static class Listener
+    private static class Listener
         implements
         CacheEntryCreatedListener<String, String>,
         CacheEntryExpiredListener<String, String>,

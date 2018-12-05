@@ -49,7 +49,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
         if (cacheSettings.size() < 1) {
             throw new IllegalArgumentException();
         }
-        this.cacheSettings = cacheSettings.toArray(new CacheSettings[cacheSettings.size()]);
+        this.cacheSettings = cacheSettings.toArray(new CacheSettings[0]);
         this.overrideOnUpdate = overrideOnUpdate;
     }
 
@@ -112,7 +112,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
                         disk.setProperty("persistent", Boolean.TRUE);
                         disk.setProperty("resourceType", ResourceType.Core.DISK.name());
                         disk.setProperty("resourceUnit", MemoryUnit.MB.name());
-                        Long size = 1000L;
+                        long size = 1000L;
                         if (settings.getMaxSizeOnDiskMB() > 0) {
                             size = (long) settings.getMaxSizeOnDiskMB();
                         } else {
