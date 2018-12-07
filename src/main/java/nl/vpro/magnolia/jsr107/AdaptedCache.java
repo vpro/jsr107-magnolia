@@ -1,6 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.module.cache.BlockingCache;
+import info.magnolia.module.cache.ehcache3.EhCache3Wrapper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -53,6 +54,10 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         this.mgnlCache = mgnlCache;
         this.cacheManager = manager;
         this.configuration = configuration;
+        if (mgnlCache instanceof EhCache3Wrapper) {
+            EhCache3Wrapper ehcache  = (EhCache3Wrapper) mgnlCache;
+            //ehcache.getWrappedEhCache().getCacheEventNotificationService()
+        }
         listeners = (Listeners<K, V>) LISTENERS.computeIfAbsent(this.mgnlCache.getName(), Listeners::new);
     }
 
