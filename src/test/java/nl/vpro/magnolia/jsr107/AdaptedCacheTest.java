@@ -1,5 +1,6 @@
 package nl.vpro.magnolia.jsr107;
 
+import info.magnolia.module.cache.ehcache3.EhCache3Wrapper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -9,6 +10,10 @@ import javax.cache.configuration.FactoryBuilder;
 import javax.cache.configuration.MutableCacheEntryListenerConfiguration;
 import javax.cache.event.*;
 
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,20 +28,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 public class AdaptedCacheTest {
 
-	private AdaptedCache<String, String> cache;
+	private AdaptedCache<String, String> mockCache;
+    private AdaptedCache<String, String> ehCache;
+
     private AdaptedCache<String, Optional<String>> cacheWithOptional;
 
 
     @Before
 	public void init() {
-        cache = new AdaptedCache<>(new MockCache("test"), null, null);
+        CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
+            .withCache("test",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, CacheValue.class, ResourcePoolsBuilder.heap(10)))
+            .build();
+        cacheManager.init();
+
+
+        mockCache = new AdaptedCache<>(new MockCache("test"), null, null);
         cacheWithOptional = new AdaptedCache<>(new MockCache("test"), null, null);
+        ehCache = new AdaptedCache<>(new EhCache3Wrapper("test", null, 100, cacheManager.getCache("test", String.class, CacheValue.class)),null, null);
 	}
 	@Test
 	public void get() throws Exception {
-		assertThat(cache.get("bla")).isNull();
-        cache.put("bla", "foo");
-        assertThat(cache.get("bla")).isEqualTo("foo");
+		assertThat(mockCache.get("bla")).isNull();
+        mockCache.put("bla", "foo");
+        assertThat(mockCache.get("bla")).isEqualTo("foo");
 
         assertThat(cacheWithOptional.get("bla")).isNull();
         cacheWithOptional.put("bla", Optional.of("foo"));
@@ -45,24 +60,24 @@ public class AdaptedCacheTest {
 
 	@Test
 	public void getAll() throws Exception {
-        cache.put("bla", "foo");
-        cache.put("bloe", "bar");
-        cache.put("null", null);
+        mockCache.put("bla", "foo");
+        mockCache.put("bloe", "bar");
+        mockCache.put("null", null);
 
-        assertThat(cache.getAll(new HashSet<>(Arrays.asList("bla")))).containsOnly(new AbstractMap.SimpleEntry<>("bla", "foo"));
-        assertThat(cache.getAll(new HashSet<>(Arrays.asList("bla", "bloe", "blie")))).containsOnly(new AbstractMap.SimpleEntry<>("bla", "foo"), new AbstractMap.SimpleEntry<>("bloe", "bar"));
-        assertThat(cache.getAll(new HashSet<>(Arrays.asList("bla", "bloe", "null")))).containsOnly(new AbstractMap.SimpleEntry<>("bla", "foo"), new AbstractMap.SimpleEntry<>("bloe", "bar"), new AbstractMap.SimpleEntry<>("null", null));
+        assertThat(mockCache.getAll(new HashSet<>(Arrays.asList("bla")))).containsOnly(new AbstractMap.SimpleEntry<>("bla", "foo"));
+        assertThat(mockCache.getAll(new HashSet<>(Arrays.asList("bla", "bloe", "blie")))).containsOnly(new AbstractMap.SimpleEntry<>("bla", "foo"), new AbstractMap.SimpleEntry<>("bloe", "bar"));
+        assertThat(mockCache.getAll(new HashSet<>(Arrays.asList("bla", "bloe", "null")))).containsOnly(new AbstractMap.SimpleEntry<>("bla", "foo"), new AbstractMap.SimpleEntry<>("bloe", "bar"), new AbstractMap.SimpleEntry<>("null", null));
 	}
 
 	@Test
 	public void containsKey() throws Exception {
-        cache.put("bla", "foo");
-        cache.put("null", null);
+        mockCache.put("bla", "foo");
+        mockCache.put("null", null);
 
 
-        assertThat(cache.containsKey("bla")).isTrue();
-        assertThat(cache.containsKey("bloe")).isFalse();
-        assertThat(cache.containsKey("null")).isTrue();
+        assertThat(mockCache.containsKey("bla")).isTrue();
+        assertThat(mockCache.containsKey("bloe")).isFalse();
+        assertThat(mockCache.containsKey("null")).isTrue();
 	}
 
 	@Test
@@ -72,14 +87,14 @@ public class AdaptedCacheTest {
 
 	@Test
 	public void put() throws Exception {
-        cache.put("bla", "foo");
+        mockCache.put("bla", "foo");
         // Test e.g. in containsKey
 	}
 
 	@Test
 	public void getAndPut() throws Exception {
-        assertThat(cache.getAndPut("bla", "foo")).isNull();
-        assertThat(cache.getAndPut("bla", "bar")).isEqualTo("foo");
+        assertThat(mockCache.getAndPut("bla", "foo")).isNull();
+        assertThat(mockCache.getAndPut("bla", "bar")).isEqualTo("foo");
 	}
 
 	@Test
@@ -87,126 +102,126 @@ public class AdaptedCacheTest {
 	    Map<String, String> map = new HashMap<>();
         map.put("bla", "foo");
         map.put("blie", "bar");
-	    cache.putAll(map);
+	    mockCache.putAll(map);
 
-        assertThat(cache.get("bla")).isEqualTo("foo");
-        assertThat(cache.get("blie")).isEqualTo("bar");
-        assertThat(cache).hasSize(2);
+        assertThat(mockCache.get("bla")).isEqualTo("foo");
+        assertThat(mockCache.get("blie")).isEqualTo("bar");
+        assertThat(mockCache).hasSize(2);
 
 	}
 
 	@Test
 	public void putIfAbsent() throws Exception {
-        assertThat(cache.putIfAbsent("bla", "foo")).isTrue();
-        assertThat(cache.putIfAbsent("bla", "bar")).isFalse();
+        assertThat(mockCache.putIfAbsent("bla", "foo")).isTrue();
+        assertThat(mockCache.putIfAbsent("bla", "bar")).isFalse();
 
-        assertThat(cache.get("bla")).isEqualTo("foo");
+        assertThat(mockCache.get("bla")).isEqualTo("foo");
 
 	}
 
 	@Test
 	public void remove() throws Exception {
-        cache.put("bla", "foo");
+        mockCache.put("bla", "foo");
 
-        assertThat(cache.remove("bla")).isTrue();
-        assertThat(cache.remove("bla")).isFalse();
-        assertThat(cache.remove("blie")).isFalse();
+        assertThat(mockCache.remove("bla")).isTrue();
+        assertThat(mockCache.remove("bla")).isFalse();
+        assertThat(mockCache.remove("blie")).isFalse();
 
-        assertThat(cache.containsKey("bla")).isFalse();
+        assertThat(mockCache.containsKey("bla")).isFalse();
 	}
 
 	@Test
 	public void removeWithValue() throws Exception {
-        cache.put("bla", "foo");
+        mockCache.put("bla", "foo");
 
-        assertThat(cache.remove("bla", "bar")).isFalse();
-        assertThat(cache.containsKey("bla")).isTrue();
-        assertThat(cache.remove("bla", "foo")).isTrue();
-        assertThat(cache.containsKey("bla")).isFalse();
+        assertThat(mockCache.remove("bla", "bar")).isFalse();
+        assertThat(mockCache.containsKey("bla")).isTrue();
+        assertThat(mockCache.remove("bla", "foo")).isTrue();
+        assertThat(mockCache.containsKey("bla")).isFalse();
 
 	}
 
 	@Test
 	public void getAndRemove() throws Exception {
-        assertThat(cache.getAndRemove("bla")).isNull();
-        cache.put("bla", "foo");
-        assertThat(cache.getAndRemove("bla")).isEqualTo("foo");
+        assertThat(mockCache.getAndRemove("bla")).isNull();
+        mockCache.put("bla", "foo");
+        assertThat(mockCache.getAndRemove("bla")).isEqualTo("foo");
 	}
 
 	@Test
 	public void replace() throws Exception {
-        assertThat(cache.replace("bla", "bar")).isFalse();
-        assertThat(cache.containsKey("bla")).isFalse();
-        cache.put("bla", "xx");
-        assertThat(cache.replace("bla", "foo")).isTrue();
-        assertThat(cache.get("bla")).isEqualTo("foo");
+        assertThat(mockCache.replace("bla", "bar")).isFalse();
+        assertThat(mockCache.containsKey("bla")).isFalse();
+        mockCache.put("bla", "xx");
+        assertThat(mockCache.replace("bla", "foo")).isTrue();
+        assertThat(mockCache.get("bla")).isEqualTo("foo");
 
 
 	}
 
 	@Test
 	public void replaceWithValue() throws Exception {
-        assertThat(cache.replace("bla", "bar")).isFalse();
-        assertThat(cache.containsKey("bla")).isFalse();
-        cache.put("bla", "bar");
-        assertThat(cache.containsKey("bla")).isTrue();
-        assertThat(cache.replace("bla", "bar", "foo")).isTrue();
-        assertThat(cache.get("bla")).isEqualTo("foo");
-        assertThat(cache.replace("bla", "bar", "xx")).isFalse();
-        assertThat(cache.get("bla")).isEqualTo("foo");
+        assertThat(mockCache.replace("bla", "bar")).isFalse();
+        assertThat(mockCache.containsKey("bla")).isFalse();
+        mockCache.put("bla", "bar");
+        assertThat(mockCache.containsKey("bla")).isTrue();
+        assertThat(mockCache.replace("bla", "bar", "foo")).isTrue();
+        assertThat(mockCache.get("bla")).isEqualTo("foo");
+        assertThat(mockCache.replace("bla", "bar", "xx")).isFalse();
+        assertThat(mockCache.get("bla")).isEqualTo("foo");
 	}
 
 	@Test
 	public void getAndReplace() throws Exception {
-        assertThat(cache.getAndReplace("bla", "bar")).isNull();
-        assertThat(cache).hasSize(0);
-        cache.put("bla", "foo");
-        assertThat(cache.getAndReplace("bla", "bar")).isEqualTo("foo");
-        assertThat(cache).hasSize(1);
-        assertThat(cache.get("bla")).isEqualTo("bar");
+        assertThat(mockCache.getAndReplace("bla", "bar")).isNull();
+        assertThat(mockCache).hasSize(0);
+        mockCache.put("bla", "foo");
+        assertThat(mockCache.getAndReplace("bla", "bar")).isEqualTo("foo");
+        assertThat(mockCache).hasSize(1);
+        assertThat(mockCache.get("bla")).isEqualTo("bar");
 
 	}
 
 	@Test
 	public void removeAll() throws Exception {
-        cache.put("bla", "foo");
-        cache.put("blie", "bar");
-        cache.put("null", null);
-        assertThat(cache).hasSize(3);
-        cache.removeAll();
-        assertThat(cache).isEmpty();
+        mockCache.put("bla", "foo");
+        mockCache.put("blie", "bar");
+        mockCache.put("null", null);
+        assertThat(mockCache).hasSize(3);
+        mockCache.removeAll();
+        assertThat(mockCache).isEmpty();
 
 	}
 
 	@Test
 	public void removeAllWithKeys() throws Exception {
-        cache.put("bla", "foo");
-        cache.put("blie", "bar");
-        cache.put("null", null);
+        mockCache.put("bla", "foo");
+        mockCache.put("blie", "bar");
+        mockCache.put("null", null);
 
-        assertThat(cache).hasSize(3);
-        cache.removeAll(new HashSet<>(Arrays.asList("bla")));
-        assertThat(cache).hasSize(2);
+        assertThat(mockCache).hasSize(3);
+        mockCache.removeAll(new HashSet<>(Arrays.asList("bla")));
+        assertThat(mockCache).hasSize(2);
 	}
 
 	@Test
 	public void clear() throws Exception {
-        cache.put("bla", "foo");
-        cache.put("blie", "bar");
-        cache.put("null", null);
-        assertThat(cache).hasSize(3);
-        cache.clear();
-        assertThat(cache).isEmpty();
+        mockCache.put("bla", "foo");
+        mockCache.put("blie", "bar");
+        mockCache.put("null", null);
+        assertThat(mockCache).hasSize(3);
+        mockCache.clear();
+        assertThat(mockCache).isEmpty();
 	}
 
 
 	@Test
 	public void iterator() throws Exception {
-        cache.put("bla", "foo");
-        cache.put("blie", "bar");
-        cache.put("null", null);
+        mockCache.put("bla", "foo");
+        mockCache.put("blie", "bar");
+        mockCache.put("null", null);
 
-        Iterator<Cache.Entry<String, String>> i = cache.iterator();
+        Iterator<Cache.Entry<String, String>> i = mockCache.iterator();
         assertThat(i.hasNext());
         Cache.Entry<String, String> e;
         e = i.next();
@@ -225,11 +240,23 @@ public class AdaptedCacheTest {
 
 	@Test
     public void unwrap() {
-	    assertThat(cache.unwrap(info.magnolia.module.cache.Cache.class)).isInstanceOf(MockCache.class);
+	    assertThat(mockCache.unwrap(info.magnolia.module.cache.Cache.class)).isInstanceOf(MockCache.class);
     }
 
     @Test
     public void registerTestAndDeregisterCacheEntryListener() {
+        registerTestAndDeregisterCacheEntryListener(mockCache);
+
+    }
+     @Test
+    public void registerTestAndDeregisterCacheEntryListenerEhcache() {
+        registerTestAndDeregisterCacheEntryListener(ehCache);
+
+    }
+
+
+
+    protected void registerTestAndDeregisterCacheEntryListener(AdaptedCache<String, String> cache) {
         Listener listener = new Listener();
         MutableCacheEntryListenerConfiguration<String, String> configuration = new MutableCacheEntryListenerConfiguration<>(
             new FactoryBuilder.SingletonFactory<>(listener),
@@ -289,13 +316,13 @@ public class AdaptedCacheTest {
             false,
             true
         );
-        cache.registerCacheEntryListener(configuration);
-        cache.put("A", "a");
-        cache.put("A", "b");
-        cache.put("B", "a");
-        cache.put("A", "c");
-        cache.put("A", null);
-        cache.put("A", "d");
+        mockCache.registerCacheEntryListener(configuration);
+        mockCache.put("A", "a");
+        mockCache.put("A", "b");
+        mockCache.put("B", "a");
+        mockCache.put("A", "c");
+        mockCache.put("A", null);
+        mockCache.put("A", "d");
 
 
 

@@ -19,6 +19,11 @@ import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
 
+import org.ehcache.core.Ehcache;
+import org.ehcache.event.CacheEvent;
+import org.ehcache.event.EventFiring;
+import org.ehcache.event.EventOrdering;
+
 import static nl.vpro.magnolia.jsr107.CacheValue.of;
 
 /**
@@ -54,10 +59,6 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         this.mgnlCache = mgnlCache;
         this.cacheManager = manager;
         this.configuration = configuration;
-        if (mgnlCache instanceof EhCache3Wrapper) {
-            EhCache3Wrapper ehcache  = (EhCache3Wrapper) mgnlCache;
-            //ehcache.getWrappedEhCache().getCacheEventNotificationService()
-        }
         listeners = (Listeners<K, V>) LISTENERS.computeIfAbsent(this.mgnlCache.getName(), Listeners::new);
     }
 
@@ -291,24 +292,55 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     @SuppressWarnings("unchecked")
     @Override
     public void registerCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        listeners.cacheEntryListenerConfigurations.add(cacheEntryListenerConfiguration);
-        CacheEntryListener<? super K, ? super V> cacheEntryListener = cacheEntryListenerConfiguration.getCacheEntryListenerFactory().create();
-        if (cacheEntryListener instanceof CacheEntryCreatedListener) {
-            listeners.createdListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryCreatedListener<K, V>) cacheEntryListener);
-        }
+        if ( ! listeners.cacheEntryListenerConfigurations.contains(cacheEntryListenerConfiguration)) {
+            listeners.cacheEntryListenerConfigurations.add(cacheEntryListenerConfiguration);
+            boolean viaEhcache = false;
+            if (mgnlCache instanceof EhCache3Wrapper) {
+                try {
+                    EhCache3Wrapper ehcacheWrapper = (EhCache3Wrapper) mgnlCache;
+                    Ehcache ehCache = (Ehcache) ehcacheWrapper.getWrappedEhCache();
+                    ehCache.getRuntimeConfiguration().registerCacheEventListener(
+                        new EhcacheEventLister(this, cacheEntryListenerConfiguration),
+                        EventOrdering.ORDERED,
+                        EventFiring.ASYNCHRONOUS,
+                        new HashSet<>(Arrays.asList(org.ehcache.event.EventType.values())));
+                    viaEhcache = true;
+                } catch (Exception e) {
+                    log.warn("{}", e);
+                }
+            }
+            if (! viaEhcache) {
 
-        if (cacheEntryListener instanceof CacheEntryUpdatedListener) {
-            listeners.updatedListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryUpdatedListener<K, V>) cacheEntryListener);
+                CacheEntryListener<? super K, ? super V> cacheEntryListener = cacheEntryListenerConfiguration.getCacheEntryListenerFactory().create();
+                if (cacheEntryListener instanceof CacheEntryCreatedListener) {
+                    listeners.createdListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryCreatedListener<K, V>) cacheEntryListener);
+                }
+
+                if (cacheEntryListener instanceof CacheEntryUpdatedListener) {
+                    listeners.updatedListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryUpdatedListener<K, V>) cacheEntryListener);
+                }
+                if (cacheEntryListener instanceof CacheEntryRemovedListener) {
+                    listeners.removedListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryRemovedListener<K, V>) cacheEntryListener);
+                }
+                listeners.cacheEntryEventFilter = cacheEntryListenerConfiguration.getCacheEntryEventFilterFactory().create();
+            }
         }
-        if (cacheEntryListener instanceof CacheEntryRemovedListener) {
-            listeners.removedListenerMap.put(cacheEntryListenerConfiguration, (CacheEntryRemovedListener<K, V>) cacheEntryListener);
-        }
-        listeners.cacheEntryEventFilter = cacheEntryListenerConfiguration.getCacheEntryEventFilterFactory().create();
     }
 
     @Override
     public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        listeners.remove(cacheEntryListenerConfiguration);
+        if (listeners.remove(cacheEntryListenerConfiguration)) {
+            if (mgnlCache instanceof EhCache3Wrapper) {
+                try {
+                    EhCache3Wrapper ehcacheWrapper = (EhCache3Wrapper) mgnlCache;
+                    Ehcache ehCache = (Ehcache) ehcacheWrapper.getWrappedEhCache();
+                    ehCache.getRuntimeConfiguration().deregisterCacheEventListener(
+                        new EhcacheEventLister(this, cacheEntryListenerConfiguration));
+                } catch (Exception e) {
+                    log.warn("{}", e);
+                }
+            }
+        }
     }
 
     @Override
@@ -481,14 +513,87 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         }
 
         public boolean has() {
-            return ! cacheEntryListenerConfigurations.isEmpty();
+            return ! createdListenerMap.isEmpty() || ! updatedListenerMap.isEmpty() || ! removedListenerMap.isEmpty();
         }
 
-        public void remove(CacheEntryListenerConfiguration<KK, VV> cacheEntryListenerConfiguration) {
-            cacheEntryListenerConfigurations.remove(cacheEntryListenerConfiguration);
+        public boolean remove(CacheEntryListenerConfiguration<KK, VV> cacheEntryListenerConfiguration) {
+            boolean remove = cacheEntryListenerConfigurations.remove(cacheEntryListenerConfiguration);
             createdListenerMap.remove(cacheEntryListenerConfiguration);
             updatedListenerMap.remove(cacheEntryListenerConfiguration);
             removedListenerMap.remove(cacheEntryListenerConfiguration);
+            return remove;
+        }
+    }
+
+    static final class EhcacheEventLister<KK, VV> implements  org.ehcache.event.CacheEventListener {
+        final CacheEntryListenerConfiguration<KK, VV> cacheEntryListenerConfiguration;
+        final CacheEntryEventFilter<? super KK, ? super VV> cacheEntryEventFilter;
+        final CacheEntryListener<? super KK, ? super VV> cacheEntryListener;
+        final Cache cache;
+
+
+
+        public EhcacheEventLister(Cache cache, CacheEntryListenerConfiguration<KK, VV> cacheEntryListenerConfiguration) {
+            this.cacheEntryListenerConfiguration = cacheEntryListenerConfiguration;
+            this.cacheEntryEventFilter = cacheEntryListenerConfiguration.getCacheEntryEventFilterFactory().create();
+            this.cacheEntryListener = cacheEntryListenerConfiguration.getCacheEntryListenerFactory().create();
+            this.cache = cache;
+
+
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            EhcacheEventLister<?, ?> that = (EhcacheEventLister<?, ?>) o;
+
+            return cacheEntryListenerConfiguration != null ? cacheEntryListenerConfiguration.equals(that.cacheEntryListenerConfiguration) : that.cacheEntryListenerConfiguration == null;
+        }
+
+        @Override
+        public int hashCode() {
+            return cacheEntryListenerConfiguration != null ? cacheEntryListenerConfiguration.hashCode() : 0;
+        }
+
+        @Override
+        public void onEvent(CacheEvent cacheEvent) {
+
+            Iterable<CacheEntryEvent<? extends KK, ? extends VV>> events = Arrays.asList(new AdapterCacheEntry<>(
+                cache,
+                EventType.valueOf(cacheEvent.getType().name()),
+                (KK) cacheEvent.getKey(),
+                (CacheValue<VV>) cacheEvent.getOldValue(),
+                (CacheValue<VV>) cacheEvent.getNewValue()));
+
+            switch(cacheEvent.getType()) {
+
+                case EXPIRED:
+                     if (cacheEntryListener instanceof CacheEntryExpiredListener) {
+                        ((CacheEntryExpiredListener<KK, VV>) cacheEntryListener).onExpired(events);
+                    }
+                    break;
+                case EVICTED:
+                case REMOVED:
+                    if (cacheEntryListener instanceof CacheEntryRemovedListener) {
+                        ((CacheEntryRemovedListener<KK, VV>) cacheEntryListener).onRemoved(events);
+                    }
+                    break;
+                case CREATED:
+                     if (cacheEntryListener instanceof CacheEntryCreatedListener) {
+                        ((CacheEntryCreatedListener<KK, VV>) cacheEntryListener).onCreated(events);
+                    }
+                    break;
+
+                case UPDATED:
+                     if (cacheEntryListener instanceof CacheEntryUpdatedListener) {
+                        ((CacheEntryUpdatedListener<KK, VV>) cacheEntryListener).onUpdated(events);
+                    }
+                    break;
+                default:
+                    log.warn("Unrecognized event {}", cacheEvent);
+            }
         }
     }
 
