@@ -14,6 +14,7 @@ import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -36,18 +37,22 @@ import org.ehcache.config.units.MemoryUnit;
 public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
     @Getter
     private final String nodeName;
+    @Getter
+    private final Method method;
+
     private final CacheSettings[] cacheSettings;
     private final boolean overrideOnUpdate;
 
 
     @lombok.Builder(builderClassName = "Builder")
-    public CreateCacheConfigurationTask(
+    protected CreateCacheConfigurationTask(
         @Nonnull String name,
-        @Singular("cacheSettings")
-            List<CacheSettings> cacheSettings,
+        Method method,
+        @Singular("cacheSettings") List<CacheSettings> cacheSettings,
         boolean overrideOnUpdate
     ) {
         super("Cache configuration for " + name, "Installs cache configuration for " + name);
+        this.method = method;
         if (StringUtils.isBlank(name)) {
             throw new IllegalArgumentException("Cache name cannot be empty");
         }

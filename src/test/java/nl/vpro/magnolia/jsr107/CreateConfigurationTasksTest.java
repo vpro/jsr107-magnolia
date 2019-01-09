@@ -100,7 +100,7 @@ public class CreateConfigurationTasksTest {
 
         }
         assertThat(tasks).hasSize(7);
-        assertThat(tasks.get(2).getNodeName()).isEqualTo("nl.vpro.magnolia.jsr107.CreateConfigurationTasksTest$TestBean.methodThree(java.lang.String)");
+        assertThat(tasks.get(5).getNodeName()).isEqualTo("nl.vpro.magnolia.jsr107.CreateConfigurationTasksTest$TestBean.methodThree(java.lang.String)");
 
 
         // TODO, can I get a mock install context?

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -86,12 +87,14 @@ public class CreateConfigurationTasks {
                         CacheSettings settings = CacheSettings.of(cacheSettings);
                         result.add(CreateCacheConfigurationTask.builder()
                             .name(getCacheName(m , cr))
+                            .method(m)
                             .overrideOnUpdate(overrideOnUpdate)
                             .cacheSettings(settings)
                             .build());
                         if (StringUtils.isNotBlank(cr.exceptionCacheName())) {
                             result.add(CreateCacheConfigurationTask.builder()
                                 .name(cr.exceptionCacheName())
+                                .method(m)
                                 .overrideOnUpdate(overrideOnUpdate)
                                 .cacheSettings(settings)
                                 .cacheSettings(CacheSettings.of(exceptionCacheSettings))
@@ -104,6 +107,7 @@ public class CreateConfigurationTasks {
                 c = c.getSuperclass();
             }
         }
+        result.sort(Comparator.comparing(CreateCacheConfigurationTask::getNodeName));
         return result;
     }
 
