@@ -24,7 +24,7 @@ public class AdaptedBlockingCacheTest {
 
 	}
 	@Test
-	public void get() throws Exception {
+	public void get() {
 		assertThat(cache.get("bla")).isNull();
         cache.put("bla", "foo");
         assertThat(cache.get("bla")).isEqualTo("foo");
@@ -32,7 +32,7 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void getAll() throws Exception {
+	public void getAll() {
         cache.put("bla", "foo");
         cache.put("bloe", "bar");
         cache.put("null", null);
@@ -47,7 +47,7 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void containsKey() throws Exception {
+	public void containsKey() {
         cache.put("bla", "foo");
         cache.put("null", null);
 
@@ -58,24 +58,24 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void loadAll() throws Exception {
+	public void loadAll() {
         // Not supported.
 	}
 
 	@Test
-	public void put() throws Exception {
+	public void put() {
         cache.put("bla", "foo");
         // Test e.g. in containsKey
 	}
 
 	@Test
-	public void getAndPut() throws Exception {
+	public void getAndPut() {
         assertThat(cache.getAndPut("bla", "foo")).isNull();
         assertThat(cache.getAndPut("bla", "bar")).isEqualTo("foo");
 	}
 
 	@Test
-	public void putAll() throws Exception {
+	public void putAll() {
 	    Map<String, String> map = new HashMap<>();
         map.put("bla", "foo");
         map.put("blie", "bar");
@@ -88,7 +88,7 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void putIfAbsent() throws Exception {
+	public void putIfAbsent() {
         assertThat(cache.putIfAbsent("bla", "foo")).isTrue();
         assertThat(cache.putIfAbsent("bla", "bar")).isFalse();
 
@@ -97,7 +97,7 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void remove() throws Exception {
+	public void remove() {
         cache.put("bla", "foo");
 
         assertThat(cache.remove("bla")).isTrue();
@@ -108,7 +108,7 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void removeWithValue() throws Exception {
+	public void removeWithValue() {
         cache.put("bla", "foo");
 
         assertThat(cache.remove("bla", "bar")).isFalse();
@@ -119,14 +119,14 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void getAndRemove() throws Exception {
+	public void getAndRemove() {
         assertThat(cache.getAndRemove("bla")).isNull();
         cache.put("bla", "foo");
         assertThat(cache.getAndRemove("bla")).isEqualTo("foo");
 	}
 
 	@Test
-	public void replace() throws Exception {
+	public void replace() {
         assertThat(cache.replace("bla", "bar")).isFalse();
         assertThat(cache.containsKey("bla")).isFalse();
         cache.put("bla", "xx");
@@ -137,7 +137,7 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void replaceWithValue() throws Exception {
+	public void replaceWithValue() {
         assertThat(cache.replace("bla", "bar")).isFalse();
         assertThat(cache.containsKey("bla")).isFalse();
         cache.put("bla", "bar");
@@ -149,7 +149,7 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void getAndReplace() throws Exception {
+	public void getAndReplace() {
         assertThat(cache.getAndReplace("bla", "bar")).isNull();
         assertThat(cache).hasSize(0);
         cache.put("bla", "foo");
@@ -160,7 +160,7 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void removeAll() throws Exception {
+	public void removeAll() {
         cache.put("bla", "foo");
         cache.put("blie", "bar");
         cache.put("null", null);
@@ -171,7 +171,7 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void removeAllWithKeys() throws Exception {
+	public void removeAllWithKeys() {
         cache.put("bla", "foo");
         cache.put("blie", "bar");
         cache.put("null", null);
@@ -182,7 +182,7 @@ public class AdaptedBlockingCacheTest {
 	}
 
 	@Test
-	public void clear() throws Exception {
+	public void clear() {
         cache.put("bla", "foo");
         cache.put("blie", "bar");
         assertThat(cache).hasSize(2);

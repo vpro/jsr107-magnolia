@@ -8,8 +8,8 @@ import info.magnolia.module.cache.ehcache3.configuration.EhCache3Expiry;
 import info.magnolia.module.cache.ehcache3.configuration.Ehcache3ResourcePoolBuilder;
 import info.magnolia.module.cache.ehcache3.configuration.Ehcache3ResourcePoolsBuilder;
 import info.magnolia.module.delta.AbstractRepositoryTask;
-import info.magnolia.module.delta.TaskExecutionException;
 import info.magnolia.repository.RepositoryConstants;
+import lombok.Getter;
 import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,11 +17,13 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.function.Consumer;
 
+import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ehcache.config.ResourceType;
 import org.ehcache.config.units.EntryUnit;
 import org.ehcache.config.units.MemoryUnit;
@@ -32,6 +34,7 @@ import org.ehcache.config.units.MemoryUnit;
  */
 @Slf4j
 public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
+    @Getter
     private final String nodeName;
     private final CacheSettings[] cacheSettings;
     private final boolean overrideOnUpdate;
@@ -39,12 +42,15 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
 
     @lombok.Builder(builderClassName = "Builder")
     public CreateCacheConfigurationTask(
-        String name,
+        @Nonnull String name,
         @Singular("cacheSettings")
             List<CacheSettings> cacheSettings,
         boolean overrideOnUpdate
     ) {
         super("Cache configuration for " + name, "Installs cache configuration for " + name);
+        if (StringUtils.isBlank(name)) {
+            throw new IllegalArgumentException("Cache name cannot be empty");
+        }
         this.nodeName = name;
         if (cacheSettings.size() < 1) {
             throw new IllegalArgumentException();
@@ -65,7 +71,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
     }
 
     @Override
-    protected void doExecute(InstallContext installContext) throws RepositoryException, TaskExecutionException {
+    protected void doExecute(InstallContext installContext) throws RepositoryException {
         final Session session = installContext.getJCRSession(RepositoryConstants.CONFIG);
 
         createCacheConfigurationNode(session);

@@ -49,7 +49,7 @@ public class AdaptedCacheTest {
         ehCache = new AdaptedCache<>(new EhCache3Wrapper("test", null, 100, cacheManager.getCache("test", String.class, CacheValue.class)),null, null);
 	}
 	@Test
-	public void get() throws Exception {
+	public void get() {
 		assertThat(mockCache.get("bla")).isNull();
         mockCache.put("bla", "foo");
         assertThat(mockCache.get("bla")).isEqualTo("foo");
@@ -60,7 +60,7 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void getAll() throws Exception {
+	public void getAll() {
         mockCache.put("bla", "foo");
         mockCache.put("bloe", "bar");
         mockCache.put("null", null);
@@ -71,7 +71,7 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void containsKey() throws Exception {
+	public void containsKey() {
         mockCache.put("bla", "foo");
         mockCache.put("null", null);
 
@@ -82,24 +82,24 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void loadAll() throws Exception {
+	public void loadAll() {
         // Not supported.
 	}
 
 	@Test
-	public void put() throws Exception {
+	public void put() {
         mockCache.put("bla", "foo");
         // Test e.g. in containsKey
 	}
 
 	@Test
-	public void getAndPut() throws Exception {
+	public void getAndPut() {
         assertThat(mockCache.getAndPut("bla", "foo")).isNull();
         assertThat(mockCache.getAndPut("bla", "bar")).isEqualTo("foo");
 	}
 
 	@Test
-	public void putAll() throws Exception {
+	public void putAll() {
 	    Map<String, String> map = new HashMap<>();
         map.put("bla", "foo");
         map.put("blie", "bar");
@@ -112,7 +112,7 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void putIfAbsent() throws Exception {
+	public void putIfAbsent() {
         assertThat(mockCache.putIfAbsent("bla", "foo")).isTrue();
         assertThat(mockCache.putIfAbsent("bla", "bar")).isFalse();
 
@@ -121,7 +121,7 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void remove() throws Exception {
+	public void remove() {
         mockCache.put("bla", "foo");
 
         assertThat(mockCache.remove("bla")).isTrue();
@@ -132,7 +132,7 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void removeWithValue() throws Exception {
+	public void removeWithValue() {
         mockCache.put("bla", "foo");
 
         assertThat(mockCache.remove("bla", "bar")).isFalse();
@@ -143,14 +143,14 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void getAndRemove() throws Exception {
+	public void getAndRemove() {
         assertThat(mockCache.getAndRemove("bla")).isNull();
         mockCache.put("bla", "foo");
         assertThat(mockCache.getAndRemove("bla")).isEqualTo("foo");
 	}
 
 	@Test
-	public void replace() throws Exception {
+	public void replace() {
         assertThat(mockCache.replace("bla", "bar")).isFalse();
         assertThat(mockCache.containsKey("bla")).isFalse();
         mockCache.put("bla", "xx");
@@ -161,7 +161,7 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void replaceWithValue() throws Exception {
+	public void replaceWithValue() {
         assertThat(mockCache.replace("bla", "bar")).isFalse();
         assertThat(mockCache.containsKey("bla")).isFalse();
         mockCache.put("bla", "bar");
@@ -173,7 +173,7 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void getAndReplace() throws Exception {
+	public void getAndReplace() {
         assertThat(mockCache.getAndReplace("bla", "bar")).isNull();
         assertThat(mockCache).hasSize(0);
         mockCache.put("bla", "foo");
@@ -184,7 +184,7 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void removeAll() throws Exception {
+	public void removeAll() {
         mockCache.put("bla", "foo");
         mockCache.put("blie", "bar");
         mockCache.put("null", null);
@@ -195,7 +195,7 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void removeAllWithKeys() throws Exception {
+	public void removeAllWithKeys() {
         mockCache.put("bla", "foo");
         mockCache.put("blie", "bar");
         mockCache.put("null", null);
@@ -206,7 +206,7 @@ public class AdaptedCacheTest {
 	}
 
 	@Test
-	public void clear() throws Exception {
+	public void clear() {
         mockCache.put("bla", "foo");
         mockCache.put("blie", "bar");
         mockCache.put("null", null);
@@ -217,7 +217,7 @@ public class AdaptedCacheTest {
 
 
 	@Test
-	public void iterator() throws Exception {
+	public void iterator() {
         mockCache.put("bla", "foo");
         mockCache.put("blie", "bar");
         mockCache.put("null", null);

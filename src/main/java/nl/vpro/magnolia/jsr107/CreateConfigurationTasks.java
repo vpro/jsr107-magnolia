@@ -1,12 +1,14 @@
 package nl.vpro.magnolia.jsr107;
 
-import info.magnolia.module.delta.Task;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import javax.cache.annotation.CacheDefaults;
 import javax.cache.annotation.CacheResult;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -61,8 +63,8 @@ public class CreateConfigurationTasks {
      * The values used are the ones in the annotation {@link DefaultCacheSettings}. You can set this annotation on your methods to provide different defaults.
      * If the annotation is missing altogether the defaults of it are still used.
      */
-    public static List<Task> createConfigurationTasks(Class<?>... beans) {
-        List<Task> result = new ArrayList<>();
+    public static List<CreateCacheConfigurationTask> createConfigurationTasks(Class<?>... beans) {
+        List<CreateCacheConfigurationTask> result = new ArrayList<>();
         for (Class<?> bean : beans) {
             Class<?> c = bean;
             while (c != null) {
@@ -83,7 +85,7 @@ public class CreateConfigurationTasks {
                         }
                         CacheSettings settings = CacheSettings.of(cacheSettings);
                         result.add(CreateCacheConfigurationTask.builder()
-                            .name(cr.cacheName())
+                            .name(getCacheName(m , cr))
                             .overrideOnUpdate(overrideOnUpdate)
                             .cacheSettings(settings)
                             .build());
@@ -103,6 +105,28 @@ public class CreateConfigurationTasks {
             }
         }
         return result;
+    }
+
+    protected static String getCacheName(Method m, CacheResult cr) {
+        String providedByAnotation = cr.cacheName();
+        if (StringUtils.isBlank(providedByAnotation)) {
+            log.info("No explicit cache name on {}", cr);
+            // If not specified defaults first to {@link CacheDefaults#cacheName()} and if
+            //that is not set it defaults to:
+            //  package.name.ClassName.methodName(package.ParameterType,package.ParameterType)
+            CacheDefaults annotation = m.getDeclaringClass().getAnnotation(CacheDefaults.class);
+            if (annotation != null) {
+                String providedByCacheDefaults = annotation.cacheName();
+                if (StringUtils.isNotEmpty(providedByCacheDefaults)) {
+                    return providedByCacheDefaults;
+                }
+            }
+            return m.getDeclaringClass().getName() + "." + m.getName() + "(" + Arrays.stream(m.getParameterTypes()).map(Class::getName).collect(Collectors.joining(",")) + ")";
+
+        } else {
+            return providedByAnotation;
+        }
+
     }
 
 }
