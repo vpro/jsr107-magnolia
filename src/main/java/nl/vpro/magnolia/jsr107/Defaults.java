@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Using this wrapper, you can define default cache settings for both the normal cache as the associated cache for exception.
+ * Using this wrapper, you can define default cache settings for both the normal cache and the associated cache for exception.
  * @author Michiel Meeuwissen
  * @since 1.6
  */

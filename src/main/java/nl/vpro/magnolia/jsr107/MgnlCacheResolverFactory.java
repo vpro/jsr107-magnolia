@@ -10,6 +10,8 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 /**
+ * The {@link CacheResolverFactory} that factories {@link MgnlCacheResolver}s.
+ *
  * @author Michiel Meeuwissen
  * @since 1.0
  */

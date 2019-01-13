@@ -14,6 +14,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.jsr107.ri.annotations.*;
 
 /**
+ * Interceptor that arranges caching of null.
  * @author Michiel Meeuwissen
  * @since 1.5
  */

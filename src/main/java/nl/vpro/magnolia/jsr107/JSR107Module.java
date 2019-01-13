@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import javax.inject.Inject;
 
 /**
+ * The magnolia module implementation. Doesn't do much, besides some logging.
+ *
  * @author Michiel Meeuwissen
  * @since 1.11
  */

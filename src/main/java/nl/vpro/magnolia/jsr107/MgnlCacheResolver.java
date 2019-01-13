@@ -9,6 +9,8 @@ import javax.cache.annotation.CacheResult;
 import javax.inject.Provider;
 
 /**
+ * The implementation of {@link CacheResolver} that is backed by the {@link MgnlCacheManager}.
+ *
  * @author Michiel Meeuwissen
  * @since 1.0
  */

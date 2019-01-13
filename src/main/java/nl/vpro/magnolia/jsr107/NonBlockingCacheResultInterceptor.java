@@ -10,7 +10,7 @@ import org.jsr107.ri.annotations.guice.CacheResultInterceptor;
  * @author Michiel Meeuwissen
  * @since 1.8
  */
-public class NonBlockingCacheResultInterceptor extends CacheResultInterceptor {
+class NonBlockingCacheResultInterceptor extends CacheResultInterceptor {
 
     @Override
     protected void checkForCachedException(final Cache<Object, Throwable> exceptionCache, final GeneratedCacheKey cacheKey)

@@ -18,6 +18,8 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matchers;
 
 /**
+ * The guice module and magnolia {@link ComponentConfigurer} that sets up the necessary cache interceptors
+ *
  * @author Michiel Meeuwissen
  * @since 1.0
  */

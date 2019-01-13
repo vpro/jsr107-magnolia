@@ -10,6 +10,8 @@ import javax.cache.annotation.GeneratedCacheKey;
 
 /**
  * Like {@link org.jsr107.ri.annotations.DefaultGeneratedCacheKey} but with toString, also it only accepts serializable parameters.
+ *
+ * This is used in {@link MgnlObjectsAwareCacheKeyGenerator}.
  */
 @ToString
 public class SerializableGeneratedCacheKey implements GeneratedCacheKey {

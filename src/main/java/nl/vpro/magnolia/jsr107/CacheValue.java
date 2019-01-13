@@ -3,6 +3,7 @@ package nl.vpro.magnolia.jsr107;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -22,7 +23,6 @@ class CacheValue<V> implements Serializable {
     CacheValue(V value) {
         this.value = value;
     }
-
 
     public Optional<V> toOptional(){
         return Optional.ofNullable(value);
@@ -68,7 +68,7 @@ class CacheValue<V> implements Serializable {
 
         CacheValue<?> that = (CacheValue<?>) o;
 
-        return value != null ? value.equals(that.value) : that.value == null;
+        return Objects.equals(value, that.value);
     }
 
     @Override

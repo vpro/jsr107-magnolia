@@ -10,14 +10,18 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
 
-import javax.cache.annotation.CacheInvocationParameter;
-import javax.cache.annotation.CacheKeyGenerator;
-import javax.cache.annotation.CacheKeyInvocationContext;
-import javax.cache.annotation.GeneratedCacheKey;
+import javax.cache.annotation.*;
 import javax.jcr.Node;
 
 /**
  * A {@link CacheKeyGenerator} that maps every {@link Node} argument to its path, which makes it {@link java.io.Serializable}
+ *
+ * It also recognizes some other magnolia objects, which can trivially be serialized but are not {@link Serializable} themselves.
+ *
+ * Currently these are info.magnolia.module.site.Site and  info.magnolia.dam.api.Item. These are not magnolia core classes by the way.
+ *
+ * This class can be used as an argument for {@link CacheResult#cacheKeyGenerator()} for methods which have these kind of JCR or other magnolia objects as arguments.
+ *
  * @author Michiel Meeuwissen
  * @since 1.13
  */

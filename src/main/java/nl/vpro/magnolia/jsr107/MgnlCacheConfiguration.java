@@ -3,6 +3,7 @@ package nl.vpro.magnolia.jsr107;
 import javax.cache.configuration.Configuration;
 
 /**
+ * The {@link Configuration} implementation associated with caches in Magnolia.
  * @author Michiel Meeuwissen
  * @since 1.0
  */

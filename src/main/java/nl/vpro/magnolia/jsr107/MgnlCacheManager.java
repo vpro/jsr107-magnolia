@@ -32,6 +32,7 @@ import org.jsr107.ri.annotations.guice.CacheLookupUtil;
 /**
  * Adapts a magnolia {@link CacheFactoryProvider} to a {@link CacheManager}. This is needed for cache-annotations-ri-guice, but
  * it can be used more genericly for code which desires such a cache manager.
+ *
  * @author Michiel Meeuwissen
  * @since 1.0
  */

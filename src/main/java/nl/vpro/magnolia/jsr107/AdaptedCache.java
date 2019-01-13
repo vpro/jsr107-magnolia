@@ -95,12 +95,18 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         return result;
     }
 
+    /**
+     * Gets value without locking the key (in case the cache is a {@link BlockingCache}
+     */
     public V getUnblocking(K key) {
         V value = get(key);
         unlock(key);
         return value;
     }
 
+    /**
+     * Unlocks given key (in case the cache is a {@link BlockingCache}
+     */
     public void unlock(K key) {
         if (mgnlCache instanceof BlockingCache) {
             ((BlockingCache) mgnlCache).unlock(key);
