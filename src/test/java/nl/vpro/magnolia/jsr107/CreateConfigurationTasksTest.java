@@ -39,7 +39,7 @@ public class CreateConfigurationTasksTest {
         }
 
         @CacheResult
-        protected String methodThree(String argument) {
+        protected String methodThree(String argument, Long... moreArguments) {
             return "";
         }
 
@@ -100,7 +100,7 @@ public class CreateConfigurationTasksTest {
 
         }
         assertThat(tasks).hasSize(7);
-        assertThat(tasks.get(5).getNodeName()).isEqualTo("nl.vpro.magnolia.jsr107.CreateConfigurationTasksTest$TestBean.methodThree(java.lang.String)");
+        assertThat(tasks.get(5).getNodeName()).isEqualTo("nl.vpro.magnolia.jsr107.CreateConfigurationTasksTest$TestBean.methodThree(java.lang.String,%5BLjava.lang.Long;)");
 
 
         // TODO, can I get a mock install context?

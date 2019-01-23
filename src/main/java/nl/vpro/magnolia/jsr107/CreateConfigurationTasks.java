@@ -114,7 +114,6 @@ public class CreateConfigurationTasks {
     protected static String getCacheName(Method m, CacheResult cr) {
         String providedByAnotation = cr.cacheName();
         if (StringUtils.isBlank(providedByAnotation)) {
-            log.info("No explicit cache name on {}", cr);
             // If not specified defaults first to {@link CacheDefaults#cacheName()} and if
             //that is not set it defaults to:
             //  package.name.ClassName.methodName(package.ParameterType,package.ParameterType)
@@ -125,7 +124,12 @@ public class CreateConfigurationTasks {
                     return providedByCacheDefaults;
                 }
             }
-            return m.getDeclaringClass().getName() + "." + m.getName() + "(" + Arrays.stream(m.getParameterTypes()).map(Class::getName).collect(Collectors.joining(",")) + ")";
+            String calculated = m.getDeclaringClass().getName() + "." + m.getName() + "(" + Arrays.stream(m.getParameterTypes()).map(Class::getName).collect(Collectors.joining(",")) + ")";
+            // I'm not sure the cache name is correct for methods with array arguments.
+
+            log.info("No explicit cache name on @CacheResult of {}. Defaulting to {}", m, calculated);
+            return calculated;
+
 
         } else {
             return providedByAnotation;
