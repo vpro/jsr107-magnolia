@@ -25,6 +25,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.util.Text;
 import org.ehcache.config.ResourceType;
 import org.ehcache.config.units.EntryUnit;
 import org.ehcache.config.units.MemoryUnit;
@@ -56,7 +57,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
         if (StringUtils.isBlank(name)) {
             throw new IllegalArgumentException("Cache name cannot be empty");
         }
-        this.nodeName = name;
+        this.nodeName = Text.escapeIllegalJcrChars(name);
         if (cacheSettings.size() < 1) {
             throw new IllegalArgumentException();
         }
