@@ -127,7 +127,7 @@ public class CreateConfigurationTasks {
             String calculated = m.getDeclaringClass().getName() + "." + m.getName() + "(" + Arrays.stream(m.getParameterTypes()).map(Class::getName).collect(Collectors.joining(",")) + ")";
             // I'm not sure the cache name is correct for methods with array arguments.
 
-            log.info("No explicit cache name on @CacheResult of {}. Defaulting to {}", m, calculated);
+            log.info("No explicit cache name on @CacheResult or @CacheDefaults of {}. Defaulting to {}", m, calculated);
             return calculated;
 
 
