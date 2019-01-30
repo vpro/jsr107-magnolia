@@ -159,7 +159,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
         } else {
 
             if (overrideOnUpdate) {
-                log.info("Already existed {}. Will override settings with values defined by annotation");
+                log.info("Already existed {}. Will override settings with values defined by annotation", node);
                 consume.accept(node);
             } else {
                 log.info("Already existed {}", node);
