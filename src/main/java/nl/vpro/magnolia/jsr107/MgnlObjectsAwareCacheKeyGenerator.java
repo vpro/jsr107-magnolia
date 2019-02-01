@@ -82,7 +82,7 @@ public class MgnlObjectsAwareCacheKeyGenerator implements CacheKeyGenerator {
             throw new IllegalArgumentException("Not serializable " + value);
         }
 
-        return new SerializableGeneratedCacheKey(result.toArray(new Serializable[result.size()]));
+        return new SerializableGeneratedCacheKey(result.toArray(new Serializable[0]));
     }
 
 

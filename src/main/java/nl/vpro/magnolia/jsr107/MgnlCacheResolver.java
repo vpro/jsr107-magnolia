@@ -29,9 +29,14 @@ class MgnlCacheResolver implements CacheResolver {
     public <K, V> Cache<K, V> resolveCache(CacheInvocationContext<? extends Annotation> cacheInvocationContext) {
         if (exceptions) {
             String cacheName = ((CacheResult) cacheInvocationContext.getCacheAnnotation()).exceptionCacheName();
-            return cacheManager.get().getCache(cacheName);
+            return getCache(cacheName);
         } else {
-            return cacheManager.get().getCache(cacheInvocationContext.getCacheName());
+            return getCache(cacheInvocationContext.getCacheName());
         }
+    }
+
+    protected <K, V> Cache<K, V> getCache(String name) {
+        Cache<K, V> result = cacheManager.get().getCache(name);
+        return result;
     }
 }
