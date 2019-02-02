@@ -1,6 +1,8 @@
 # jsr107-magnolia
 [![Build Status](https://travis-ci.org/vpro/jsr107-magnolia.svg?)](https://travis-ci.org/vpro/jsr107-magnolia)
 [![Maven Central](https://img.shields.io/maven-central/v/nl.vpro/jsr107-magnolia.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22nl.vpro%22%20AND%20a:%22jsr107-magnolia%22)
+[![codecov](https://codecov.io/gh/vpro/jsr107-magnolia/branch/master/graph/badge.svg)](https://codecov.io/gh/vpro/jsr107-magnolia)
+
 
 See 
  - https://www.magnolia-cms.com/
