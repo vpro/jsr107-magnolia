@@ -43,14 +43,14 @@
     <jcr.version>2.0</jcr.version>
     <slf4j.version>1.7.25</slf4j.version>
 
-    <magnolia.version>5.5.9</magnolia.version>
-    <magnolia.cache.version>5.5.8</magnolia.cache.version>
+    <magnolia.version>5.6.7</magnolia.version>
+    <magnolia.cache.version>5.6.2</magnolia.cache.version>
     <ehcache.version>3.3.0</ehcache.version> <!-- should be in sync with version of magnolia.cache -->
 
     <junit.version>4.12</junit.version>
-    <mockito.version>2.24.0</mockito.version>
-    <lombok.version>1.18.4</lombok.version>
-    <assertj.version>3.11.1</assertj.version>
+    <mockito.version>2.28.2</mockito.version>
+    <lombok.version>1.18.8</lombok.version>
+    <assertj.version>3.12.2</assertj.version>
 
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -144,7 +144,7 @@
     <dependency>
       <groupId>org.jsr107.ri</groupId>
       <artifactId>cache-annotations-ri-guice</artifactId>
-      <version>1.1.0</version>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>org.ehcache</groupId>
