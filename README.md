@@ -42,9 +42,9 @@ Or you can add this to your pom.xml
 </dependency>
 ```
 ### Configuration
-For versions older then 1.14 caches were configure like so in the JCR-tree:
+For versions older then 1.14 caches were configured like so in the JCR-tree:
 ![cache configuration](cache-config.png?raw=true "Cache configuration")
-From 1.14 onwards as Magnolia 5.5.4 uses ehcache3 so the configuration has changed and looks like this:
+From 1.14 onwards Magnolia 5.5.4 uses ehcache3 so the configuration has changed and looks like this:
 ![cache configuration](cache-config-ehcache3.png?raw=true "Ehcache 3 configuration")
 
 
@@ -72,7 +72,7 @@ Default settings could be configured using the `nl.vpro.magnolia.jsr107.DefaultC
         MediaSearch search = new MediaSearch();
         ....        
 ```     
-If you use an 'exception cache' too, you may want to configure this separately. You need to wrap a @nl.vpro.magnolia.jsr107.Defaults then.
+If you use an 'exception cache' too, you may want to configure this separately. You need to wrap a `@nl.vpro.magnolia.jsr107.Defaults` then.
 ```java
  @CacheResult(cacheKeyGenerator = ImageCacheKey.class, cacheName = ASSET_LINKS_CACHE, exceptionCacheName = ASSET_LINKS_CACHE + "-exceptions")
     @Defaults(
@@ -104,7 +104,7 @@ The cache settings are in this way still visible in the JCR-tree, and can be mod
 ```
 ## MgnlCacheManager
 
-The `nl.vpro.magnolia.jsr107.MgnlCacheManager` implementation of `javax.cache.CacheManager` contains a few utility which may come in useful when interacting with caches. E.g. utilities to get existing values from the caches, or all keys, which can be used when activily refreshing entries in the cache (e.g. in conjection with `@javax.cache.annotation.CachePut`)
+The `nl.vpro.magnolia.jsr107.MgnlCacheManager` implementation of `javax.cache.CacheManager` contains a few utilities which may come in useful when interacting with caches. E.g. utilities to get existing values from the caches, or to retrieve all keys, which can be used when activily refreshing entries in the cache (e.g. in conjection with `@javax.cache.annotation.CachePut`)
 
 A `MgnlCacheManager` can simply be obtained using `@Inject`.
 
