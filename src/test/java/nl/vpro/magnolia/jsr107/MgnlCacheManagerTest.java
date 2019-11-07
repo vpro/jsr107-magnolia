@@ -1,5 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
+import lombok.extern.log4j.Log4j2;
+
 import java.time.Duration;
 import java.util.Iterator;
 
@@ -14,6 +16,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  * @author Michiel Meeuwissen
  * @since 1.11
  */
+@Log4j2
 public class MgnlCacheManagerTest extends AbstractJSR107Test {
 
 
@@ -47,7 +50,7 @@ public class MgnlCacheManagerTest extends AbstractJSR107Test {
         for (int i= 0; i < 10000;i++) {
             assertThat(cacheManager.getValue(TestClass.class, instance, "getCachedCount", "a")).isEqualTo(0);
         }
-        System.out.print(Duration.ofNanos(System.nanoTime() - start));
+        log.info("duration: {}", Duration.ofNanos(System.nanoTime() - start));
     }
 
     @Test

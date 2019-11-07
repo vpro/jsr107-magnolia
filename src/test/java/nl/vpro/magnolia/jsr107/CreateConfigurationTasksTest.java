@@ -126,8 +126,8 @@ public class CreateConfigurationTasksTest {
     @Test
     public void createConfigurationTasks2() {
         List<CreateCacheConfigurationTask> tasks = CreateConfigurationTasks.createConfigurationTasks(TestBean2.class);
-        System.out.println(tasks);
-        CreateCacheConfigurationTask task = (CreateCacheConfigurationTask) tasks.get(0);
+        log.info("{}", tasks);
+        CreateCacheConfigurationTask task = tasks.get(0);
         assertThat(task.getCacheSettings().isOverflowToDisk()).isFalse();
     }
 }

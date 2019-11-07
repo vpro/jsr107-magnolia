@@ -1,6 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.module.cache.CacheFactory;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Michiel Meeuwissen
  * @since 1.0
  */
+@Log4j2
 public class CacheConfigurerTest extends AbstractJSR107Test {
 
 
@@ -60,7 +62,7 @@ public class CacheConfigurerTest extends AbstractJSR107Test {
             cacheKeyGenerator = MethodKey.class)
         public int exception() {
             if (count++ % 2 == 0) {
-                throw new RuntimeException("bla" + count);
+                throw new MyException("bla" + count);
             } else {
                 return count;
             }
@@ -71,7 +73,7 @@ public class CacheConfigurerTest extends AbstractJSR107Test {
             cacheName = "exceptionWithoutCache")
         public int exceptionWithoutExceptionCache() {
             if (count++ % 2 == 0) {
-                throw new RuntimeException("bla" + count);
+                throw new MyException("bla" + count);
             } else {
                 return count;
             }
@@ -82,15 +84,26 @@ public class CacheConfigurerTest extends AbstractJSR107Test {
 
         }
     }
+    public static class MyException extends RuntimeException {
+
+        public MyException(String s) {
+            super(s);
+        }
+    }
     TestClass instance;
 
     @BeforeEach
     public void setup() {
         instance = injector.getInstance(TestClass.class);
+        log.debug("Created {}", instance);
+        if (instance == null) {
+            throw new IllegalStateException();
+        }
     }
 
     @Test
     public void testCache() {
+
         assertEquals(Integer.valueOf(0), instance.getCachedCount("a"));
         assertEquals(Integer.valueOf(0), instance.getCachedCount("a"));
 
@@ -151,13 +164,13 @@ public class CacheConfigurerTest extends AbstractJSR107Test {
         try {
             instance.exception();
             fail();
-        } catch (RuntimeException rt) {
+        } catch (MyException rt) {
             assertEquals("bla1", rt.getMessage());
         }
         try {
             instance.exception();
             fail();
-        } catch (RuntimeException rt) {
+        } catch (MyException rt) {
             assertEquals("bla1", rt.getMessage());
         }
         cacheManager.getCache("exception.exception").clear();
@@ -170,7 +183,7 @@ public class CacheConfigurerTest extends AbstractJSR107Test {
         try {
             instance.exception();
             fail();
-        } catch (RuntimeException rt) {
+        } catch (MyException rt) {
             assertEquals("bla3", rt.getMessage());
         }
 
@@ -181,8 +194,9 @@ public class CacheConfigurerTest extends AbstractJSR107Test {
         try {
             instance.exceptionWithoutExceptionCache();
             fail();
-        } catch (RuntimeException rt) {
-            assertEquals("bla1", rt.getMessage());
+        } catch (MyException rt) {
+
+            assertEquals("bla1", rt.getMessage(), "");
         }
         // exceptions are not cached, so the next call will evaluate again
         assertEquals(2, instance.exceptionWithoutExceptionCache());
@@ -195,7 +209,7 @@ public class CacheConfigurerTest extends AbstractJSR107Test {
         try {
             instance.exceptionWithoutExceptionCache();
             fail();
-        } catch (RuntimeException rt) {
+        } catch (MyException rt) {
             assertEquals("bla3", rt.getMessage());
         }
 
@@ -210,7 +224,7 @@ public class CacheConfigurerTest extends AbstractJSR107Test {
     public void testConstantCacheKeyGenerator() {
         assertEquals(0, instance.constant());
         assertEquals(0, instance.constant());
-        System.out.println(f.caches.get("constants").getKeys().iterator().next());
+        log.info(f.caches.get("constants").getKeys().iterator().next());
     }
 
     // Checking whether the cache is 'blocking'
@@ -232,7 +246,7 @@ public class CacheConfigurerTest extends AbstractJSR107Test {
                     try {
                         Thread.sleep(6);
                         results[j] = instance.getCachedCount("a");
-                        System.out.println(j + " value:" + results[j]);
+                        log.info(j + " value:" + results[j]);
                     } catch (InterruptedException ignored) {
                     }
                 });
@@ -242,7 +256,7 @@ public class CacheConfigurerTest extends AbstractJSR107Test {
                     Integer value = (Integer) cacheManager.getValue("counts", new DefaultGeneratedCacheKey(new Object[]{"a"}));
                     Integer value2 = (Integer) cacheManager.getValue(TestClass.class, instance, "getCachedCount", "a");
 
-                    System.out.println(j + " found:" + value + " " + value2);
+                    log.info(j + " found:" + value + " " + value2);
 
                 });
             threads2[i].start();

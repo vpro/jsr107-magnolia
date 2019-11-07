@@ -1,6 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.test.mock.jcr.MockNode;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.Iterator;
 
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Michiel Meeuwissen
  * @since 1.13
  */
+@Log4j2
 public class MgnlObjectsAwareCacheKeyGeneratorTest extends AbstractJSR107Test {
 
     public static class TestClass {

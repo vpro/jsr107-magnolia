@@ -1,5 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
+import lombok.extern.log4j.Log4j2;
+
 import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
@@ -11,7 +13,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  * @author Michiel Meeuwissen
  * @since 1.5
  */
-
+@Log4j2
 public class DefaultCacheSettingsTest {
 
     public static class A {
@@ -34,7 +36,7 @@ public class DefaultCacheSettingsTest {
     @Test
     public void test() {
         for (Method m : DefaultCacheSettings.class.getMethods()) {
-            System.out.println(m);
+            log.info("{}", m);
         }
 
     }
