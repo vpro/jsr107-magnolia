@@ -11,12 +11,8 @@ import javax.cache.configuration.MutableCacheEntryListenerConfiguration;
 import javax.cache.event.*;
 
 import org.ehcache.CacheManager;
-import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.CacheManagerBuilder;
-import org.ehcache.config.builders.ResourcePoolsBuilder;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.ehcache.config.builders.*;
+import org.junit.jupiter.api.*;
 
 import nl.vpro.magnolia.jsr107.mock.MockCache;
 
@@ -35,7 +31,7 @@ public class AdaptedCacheTest {
     private AdaptedCache<String, Optional<String>> cacheWithOptional;
 
 
-    @Before
+    @BeforeEach
 	public void init() {
         CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
             .withCache("test",
@@ -250,7 +246,7 @@ public class AdaptedCacheTest {
 
     }
     @Test
-    @Ignore("I didn't succeed setting it up this yet")
+    @Disabled("I didn't succeed setting it up this yet")
     public void registerTestAndDeregisterCacheEntryListenerEhcache() {
         registerTestAndDeregisterCacheEntryListener(ehCache);
 

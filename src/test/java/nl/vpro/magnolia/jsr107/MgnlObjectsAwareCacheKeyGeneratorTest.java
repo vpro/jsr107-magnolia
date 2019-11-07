@@ -2,36 +2,37 @@ package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.test.mock.jcr.MockNode;
 
+import java.util.Iterator;
+
 import javax.cache.annotation.CacheResult;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
-import java.util.Iterator;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Michiel Meeuwissen
  * @since 1.13
  */
 public class MgnlObjectsAwareCacheKeyGeneratorTest extends AbstractJSR107Test {
-    
+
     public static class TestClass {
-        
+
         @CacheResult(cacheKeyGenerator = MgnlObjectsAwareCacheKeyGenerator.class)
         public String getValue(Node node) throws RepositoryException {
             return node.getPath();
         }
     }
     TestClass instance;
-    @Before
+
+    @BeforeEach
     public void setup() {
         instance = injector.getInstance(TestClass.class);
     }
-    
+
     @Test
     public void test() throws RepositoryException {
         MockNode node = new MockNode("bla");

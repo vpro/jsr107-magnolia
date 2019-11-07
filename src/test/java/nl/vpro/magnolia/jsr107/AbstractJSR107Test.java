@@ -5,11 +5,9 @@ import info.magnolia.module.cache.mbean.CacheMonitor;
 
 import javax.cache.CacheManager;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import com.google.inject.*;
 
 import nl.vpro.magnolia.jsr107.mock.MockCacheFactory;
 
@@ -26,7 +24,8 @@ public abstract class AbstractJSR107Test {
     MgnlCacheManager cacheManager;
     MockCacheFactory f;
     Injector injector;
-    @Before
+
+    @BeforeEach
     public void setupCacheManager() {
 
         injector = Guice.createInjector(new CacheConfigurer(), new AbstractModule() {

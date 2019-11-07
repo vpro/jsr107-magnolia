@@ -2,8 +2,8 @@ package nl.vpro.magnolia.jsr107;
 
 import java.util.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.vpro.magnolia.jsr107.mock.MockCacheFactory;
 
@@ -17,7 +17,7 @@ public class AdaptedBlockingCacheTest {
 
 	private AdaptedCache<String, String> cache;
 
-    @Before
+    @BeforeEach
 	public void init() {
         cache = new AdaptedCache<>(new MockCacheFactory(true).getCache("test"), null, null);
 

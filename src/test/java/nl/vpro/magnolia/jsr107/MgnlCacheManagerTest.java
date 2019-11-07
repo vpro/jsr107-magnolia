@@ -1,11 +1,12 @@
 package nl.vpro.magnolia.jsr107;
 
-import javax.cache.annotation.CacheResult;
 import java.time.Duration;
 import java.util.Iterator;
 
-import org.junit.Before;
-import org.junit.Test;
+import javax.cache.annotation.CacheResult;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -29,10 +30,10 @@ public class MgnlCacheManagerTest extends AbstractJSR107Test {
         }
 
     }
-    
+
     MgnlCacheManagerTest.TestClass instance;
 
-    @Before
+    @BeforeEach
     public void setup() {
         instance = injector.getInstance(MgnlCacheManagerTest.TestClass.class);
 

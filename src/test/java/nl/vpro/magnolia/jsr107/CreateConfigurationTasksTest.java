@@ -8,7 +8,7 @@ import java.util.List;
 import javax.cache.annotation.CacheDefaults;
 import javax.cache.annotation.CacheResult;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

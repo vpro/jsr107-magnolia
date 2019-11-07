@@ -2,7 +2,7 @@ package nl.vpro.magnolia.jsr107;
 
 import java.time.Duration;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 

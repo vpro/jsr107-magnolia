@@ -2,19 +2,18 @@ package nl.vpro.magnolia.jsr107;
 
 import info.magnolia.module.cache.CacheFactory;
 
-import javax.cache.annotation.CacheKey;
-import javax.cache.annotation.CachePut;
-import javax.cache.annotation.CacheResult;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.cache.annotation.*;
+
 import org.jsr107.ri.annotations.DefaultGeneratedCacheKey;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.vpro.magnolia.jsr107.mock.MockCacheFactory;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Michiel Meeuwissen
@@ -84,8 +83,8 @@ public class CacheConfigurerTest extends AbstractJSR107Test {
         }
     }
     TestClass instance;
-   
-    @Before
+
+    @BeforeEach
     public void setup() {
         instance = injector.getInstance(TestClass.class);
     }
