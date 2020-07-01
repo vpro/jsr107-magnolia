@@ -50,7 +50,7 @@ public class MgnlCacheManagerTest extends AbstractJSR107Test {
         for (int i= 0; i < 10000;i++) {
             assertThat(cacheManager.getValue(TestClass.class, instance, "getCachedCount", "a")).isEqualTo(0);
         }
-        log.info("duration: {}", Duration.ofNanos(System.nanoTime() - start));
+        log.info("duration: {}", () -> Duration.ofNanos(System.nanoTime() - start));
     }
 
     @Test

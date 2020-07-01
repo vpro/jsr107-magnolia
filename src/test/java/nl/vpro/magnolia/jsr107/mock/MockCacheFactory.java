@@ -1,20 +1,16 @@
 package nl.vpro.magnolia.jsr107.mock;
 
-import info.magnolia.module.cache.Cache;
-import info.magnolia.module.cache.CacheFactory;
-import info.magnolia.module.cache.CacheModule;
+import info.magnolia.module.cache.*;
 import info.magnolia.module.cache.ehcache3.EhCache3Wrapper;
-import org.ehcache.CacheManager;
-import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.CacheManagerBuilder;
-import org.ehcache.config.builders.ResourcePoolsBuilder;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.*;
+
+import static org.ehcache.config.builders.CacheConfigurationBuilder.newCacheConfigurationBuilder;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -49,7 +45,7 @@ public class MockCacheFactory implements CacheFactory {
             if (blocking) {
                 if (cm.getCache(name, Serializable.class, Serializable.class) == null) {
                     ResourcePoolsBuilder resourcePoolsBuilder = ResourcePoolsBuilder.heap(1024);
-                    CacheConfigurationBuilder<Serializable, Serializable> builder = CacheConfigurationBuilder.newCacheConfigurationBuilder(Serializable.class, Serializable.class, resourcePoolsBuilder);
+                    CacheConfigurationBuilder<Serializable, Serializable> builder = newCacheConfigurationBuilder(Serializable.class, Serializable.class, resourcePoolsBuilder);
                     cm.createCache(name, builder.build());
                 }
                 return new EhCache3Wrapper(name, cacheModule, 1000, cm.getCache(name, Serializable.class, Serializable.class));

@@ -45,7 +45,7 @@
 
     <magnolia.version>5.7.2</magnolia.version>
     <magnolia.cache.version>5.9.1</magnolia.cache.version>
-    <ehcache.version>3.3.0</ehcache.version> <!-- should be in sync with version of magnolia.cache -->
+    <ehcache.version>3.7.1</ehcache.version> <!-- should be in sync with version of magnolia.cache -->
 
     <junit.version>5.7.0-M1</junit.version>
     <mockito.version>3.3.3</mockito.version>

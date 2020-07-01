@@ -181,27 +181,32 @@ public class CacheSettings {
      * Permits elements to overflow to disk when the memory store has reached the maxInMemory limit.
      */
     boolean overflowToDisk;
+
     /**
      * Optional attribute. Sets max idle time between accesses for an element before it expires. Only used if the element is not eternal. A value of 0 means that an Element can idle indefinitely.
      */
     @Deprecated
     Integer timeToIdleSeconds;
+
     /**
      * Sets lifespan for an element. Only used if the element is not eternal. Optional attribute. A value of 0 means an Element can live for infinity
      */
     Integer timeToLiveSeconds;
+
     /**
      * Number of seconds between runs of the disk expiry thread.
      */
     @Deprecated
     Integer diskExpiryThreadIntervalSeconds;
+
     /**
      * Size to allocate to DiskStore for a spool buffer. Writes are made to this area and then asynchronously written to disk. Default: 30MB. Each spool buffer is used only by its cache. If OutOfMemory errors, you may need to lower this value. To improve DiskStore performance consider increasing it. Trace level logging in the DiskStore will show if put back ups are occurring.
      */
     @Deprecated
     Integer diskSpoolBufferSizeMB;
+
     /**
-     * Instructs Ehcache to wait the specified time in milliseconds before attempting to cache the request. Create the blockingTiemout property in the tree at the same level where the EhCacheFactory class is defined, not inside the defaultCacheConfiguration node.
+     * Instructs Ehcache to wait the specified time in milliseconds before attempting to cache the request. Create the blockingTimeout property in the tree at the same level where the EhCacheFactory class is defined, not inside the defaultCacheConfiguration node.
      *
      * TODO: So this is created at the wrong level now. But this is a bit silly, I'd want to set it <em>per cache</em>
      */

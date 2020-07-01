@@ -45,7 +45,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     private final CacheManager cacheManager;
     private final Configuration<?, ?> configuration;
 
-    private static Map<String, Listeners<?, ?>> LISTENERS = new ConcurrentHashMap<>();
+    private static final Map<String, Listeners<?, ?>> LISTENERS = new ConcurrentHashMap<>();
 
     private final Listeners<K, V> listeners;
 
@@ -115,7 +115,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
     @Override
     public void loadAll(Set<? extends K> keys, boolean replaceExistingValues, CompletionListener completionListener) {
-        log.debug("loading ", keys);
+        log.debug("loading {}", keys);
         throw new UnsupportedOperationException();
     }
 

@@ -52,13 +52,13 @@ public class CacheConfigurer extends AbstractModule implements ComponentConfigur
             requestInjection(cacheResultInterceptor);
             bindInterceptor(Matchers.annotatedWith(CacheResult.class), Matchers.any(),
                 cacheValueUnInterceptor,
-                cacheResultInterceptor
-                ,cacheValueInterceptor
+                cacheResultInterceptor,
+                cacheValueInterceptor
             );
             bindInterceptor(Matchers.any(), Matchers.annotatedWith(CacheResult.class),
                 cacheValueUnInterceptor,
-                cacheResultInterceptor
-                , cacheValueInterceptor
+                cacheResultInterceptor,
+                cacheValueInterceptor
             );
         }
 
