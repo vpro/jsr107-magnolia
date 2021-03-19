@@ -1,59 +1,66 @@
-# jsr107-magnolia
-[![Build Status](https://travis-ci.com/vpro/jsr107-magnolia.svg?)](https://travis-ci.com/vpro/jsr107-magnolia)
-[![Maven Central](https://img.shields.io/maven-central/v/nl.vpro/jsr107-magnolia.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22nl.vpro%22%20AND%20a:%22jsr107-magnolia%22)
-[![javadoc](http://www.javadoc.io/badge/nl.vpro/jsr107-magnolia.svg?color=blue)](http://www.javadoc.io/doc/nl.vpro/jsr107-magnolia)
-[![codecov](https://codecov.io/gh/vpro/jsr107-magnolia/branch/master/graph/badge.svg)](https://codecov.io/gh/vpro/jsr107-magnolia)
+= jsr107-magnolia
 
+image:https://github.com/vpro/jsr107-magnolia/workflows/build/badge.svg?[Build Status,link=https://github.com/vpro/jsr107-magnolia/actions?query=workflow%3Abuild]
+image:https://img.shields.io/maven-central/v/nl.vpro/jsr107-magnolia.svg?label=Maven%20Central[Maven Central,link=https://search.maven.org/search?q=g:%22nl.vpro%22%20AND%20a:%22jsr107-magnolia%22]
+image:http://www.javadoc.io/badge/nl.vpro/jsr107-magnolia.svg?color=blue[javadoc,link=http://www.javadoc.io/doc/nl.vpro/jsr107-magnolia]
+image:https://codecov.io/gh/vpro/jsr107-magnolia/branch/master/graph/badge.svg[codecov,link=https://codecov.io/gh/vpro/jsr107-magnolia]
 
-See 
+See
  - https://www.magnolia-cms.com/
  - https://github.com/jsr107
 
- 
 After installation you can cache the result of any method of any guice managed bean by adding the `@CacheResult` annotation.
-```java
+
+[source,java]
+----
 @CacheResult(cacheName = "CinemaUtil-sortedMovies")
 public List<Map.Entry<Movie, Set<RoleType>>> sortedMovies(Person person) {
    ...
 }
-```
+----
 
 In this case in the magnolia cache configuration automaticly a cache 'CinemaUtil-sortedMovies' will appear.
 
-## Possible cache values
+== Possible cache values
+
 The cache values may be `null` and `Optional`. This implementation will arrange that no nulls are stored in the underlying magnolia cache. If the value is `Optional`, the value of the `Optional` will be serialized.
 
 Non serializable values are only possible if the underlying eh-cache is configured not to store to disk.
 
-## Model classes
-Sadly, [model classes are not instantiated by guice, but by Magnolia itself](https://jira.magnolia-cms.com/browse/MAGNOLIA-6601), so they cannot be proxied by guice.
+== Model classes
 
+Sadly, https://jira.magnolia-cms.com/browse/MAGNOLIA-6601["model classes are not instantiated by guice, but by Magnolia itself"], so they cannot be proxied by guice.
 
-## Installation
+== Installation
 
 Download the most recent jar from: https://oss.sonatype.org/content/repositories/snapshots/nl/vpro/jsr107-magnolia and install it like you'd normally would.
 
 Or you can add this to your pom.xml
-```xml
+
+[source,xml]
+----
 <dependency>
   <groupId>nl.vpro</groupId>
   <artifactId>jsr107-magnolia</artifactId>
   <version>1.18</version>
 </dependency>
-```
-### Configuration
-For versions older then 1.14 caches were configured like so in the JCR-tree:
-![cache configuration](cache-config.png?raw=true "Cache configuration")
-From 1.14 onwards Magnolia 5.5.4 uses ehcache3 so the configuration has changed and looks like this:
-![cache configuration](cache-config-ehcache3.png?raw=true "Ehcache 3 configuration")
+----
 
+=== Configuration
+
+For versions older then 1.14 caches were configured like so in the JCR-tree:
+image:cache-config.png?raw=true[cache configuration]
+From 1.14 onwards Magnolia 5.5.4 uses ehcache3 so the configuration has changed and looks like this:
+image:cache-config-ehcache3.png?raw=true[cache configuration]
 
 Cache-configurations can be automaticly created using tasks on the version handler of your module.
 E.g. like this:
-```java
+
+[source,java]
+----
 @Slf4j
 public class CinemaVersionHandler extends DefaultModuleVersionHandler {
- 
+
     @Override
     protected List<Task> getBasicInstallTasks(InstallContext installContext) {
         List<Task> tasks = super.getBasicInstallTasks(installContext);
@@ -62,18 +69,24 @@ public class CinemaVersionHandler extends DefaultModuleVersionHandler {
         return tasks;
     }
 }
-```
+----
+
 Default settings could be configured using the `nl.vpro.magnolia.jsr107.DefaultCacheSettings` annotation:
-```java
+
+[source,java]
+----
     @CacheResult(cacheName = "CinemaUtil-scheduleForChannel")
     @DefaultCacheSettings(blockingTimeout = 30000)
     List<ScheduleItem> scheduleForChannel(String channel, LocalDate date) {
         log.info("Getting movies for  {} {}", channel, date);
         MediaSearch search = new MediaSearch();
-        ....        
-```     
+        ....
+----
+
 If you use an 'exception cache' too, you may want to configure this separately. You need to wrap a `@nl.vpro.magnolia.jsr107.Defaults` then.
-```java
+
+[source,java]
+----
  @CacheResult(cacheKeyGenerator = ImageCacheKey.class, cacheName = ASSET_LINKS_CACHE, exceptionCacheName = ASSET_LINKS_CACHE + "-exceptions")
     @Defaults(
         overrideOnUpdate = true,
@@ -83,10 +96,13 @@ If you use an 'exception cache' too, you may want to configure this separately. 
     @Override
    public String getAssetLink(Image image, String variation) {
 
-```
+----
+
 Actually the code can also be accessed if you want to configure a cache programmaticly for some other reason. This more or less eliminates the need to configure cache outside code altogether.
 The cache settings are in this way still visible in the JCR-tree, and can be modified and viewed via JMX, but they can be maintained in the code of your application.
-```java
+
+[source,java]
+----
        // Create browser cache for api clients
         setInstallOrUpdateTask(CreateCacheConfigurationTask.builder()
             .name(CACHE)
@@ -95,23 +111,25 @@ The cache settings are in this way still visible in the JCR-tree, and can be mod
                 .overflowToDisk(true)
                 .diskSpoolBufferSizeMB(500)
                 .maxElementsInMemory(200)
-                .diskExpiryThreadInterval(Duration.ofHours(24))              
+                .diskExpiryThreadInterval(Duration.ofHours(24))
             )
             .overrideOnUpdate(true)
             .build());
 
+----
 
-```
-## MgnlCacheManager
+== MgnlCacheManager
 
 The `nl.vpro.magnolia.jsr107.MgnlCacheManager` implementation of `javax.cache.CacheManager` contains a few utilities which may come in useful when interacting with caches. E.g. utilities to get existing values from the caches, or to retrieve all keys, which can be used when activily refreshing entries in the cache (e.g. in conjection with `@javax.cache.annotation.CachePut`)
 
 A `MgnlCacheManager` can simply be obtained using `@Inject`.
 
-## Cache Event Listening
+== Cache Event Listening
 
 Since version 1.16 we will also support cache listening. E.g.
-```java
+
+[source,java]
+----
     @Inject
     public MediaPlayerPageCache(
         Provider<VtkUtil> vtkUtil,
@@ -125,7 +143,6 @@ Since version 1.16 we will also support cache listening. E.g.
         systemEventBus.addHandler(ModulesStartedEvent.class, this::registerCacheEntryListener);
     }
 
-
     protected void registerCacheEntryListener(ModulesStartedEvent event) {
         log.info("{}", event);
         mgnlCacheManager.get().getCache(CACHE_NAME).registerCacheEntryListener(new MutableCacheEntryListenerConfiguration<>(
@@ -135,4 +152,4 @@ Since version 1.16 we will also support cache listening. E.g.
             true));
     }
 
-```
+----
