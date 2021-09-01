@@ -6,8 +6,9 @@ image:http://www.javadoc.io/badge/nl.vpro/jsr107-magnolia.svg?color=blue[javadoc
 image:https://codecov.io/gh/vpro/jsr107-magnolia/branch/master/graph/badge.svg[codecov,link=https://codecov.io/gh/vpro/jsr107-magnolia]
 
 See
- - https://www.magnolia-cms.com/
- - https://github.com/jsr107
+
+- https://www.magnolia-cms.com/
+- https://github.com/jsr107
 
 After installation you can cache the result of any method of any guice managed bean by adding the `@CacheResult` annotation.
 
