@@ -94,7 +94,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
                 node.setProperty("valueType", Serializable.class.getName());
 
                 // expiry
-                Node expiry = NodeUtil.createPath(node, "expiry", NodeTypes.ContentNode.NAME);
+                Node expiry = NodeUtil.createPath(node, "expiryPolicy", NodeTypes.ContentNode.NAME);
                 expiry.setProperty("class", EhCache3Expiry.class.getName());
                 for (CacheSettings settings : cacheSettings) {
                     if (!settings.isEternal() && settings.getTimeToLiveSeconds() != null) {
