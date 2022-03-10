@@ -211,4 +211,6 @@ public class CacheSettings {
      * TODO: So this is created at the wrong level now. But this is a bit silly, I'd want to set it <em>per cache</em>
      */
     int blockingTimeout;
+
+    boolean blocking;
 }
