@@ -16,7 +16,8 @@ import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
 
 /**
- * For some cases a blocking cache is realy undesirable.
+ * For some cases a blocking cache is really undesirable.
+ *
  * Magnolia only provides blocking caches (?) This 'unblocks' it after the fact.
  * @author Michiel Meeuwissen
  * @since 1.11
