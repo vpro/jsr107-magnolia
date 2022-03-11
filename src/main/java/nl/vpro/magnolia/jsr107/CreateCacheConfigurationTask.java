@@ -3,10 +3,7 @@ package nl.vpro.magnolia.jsr107;
 import info.magnolia.jcr.util.NodeTypes;
 import info.magnolia.jcr.util.NodeUtil;
 import info.magnolia.module.InstallContext;
-import info.magnolia.module.cache.ehcache3.configuration.EhCache3ConfigurationBuilder;
-import info.magnolia.module.cache.ehcache3.configuration.EhCache3Expiry;
-import info.magnolia.module.cache.ehcache3.configuration.Ehcache3ResourcePoolBuilder;
-import info.magnolia.module.cache.ehcache3.configuration.Ehcache3ResourcePoolsBuilder;
+import info.magnolia.module.cache.ehcache3.configuration.*;
 import info.magnolia.module.delta.AbstractRepositoryTask;
 import info.magnolia.repository.RepositoryConstants;
 import lombok.Getter;
@@ -15,17 +12,16 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
-import javax.annotation.Nonnull;
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
+import javax.jcr.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.util.Text;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.ehcache.config.ResourceType;
 import org.ehcache.config.units.EntryUnit;
 import org.ehcache.config.units.MemoryUnit;
@@ -36,6 +32,7 @@ import org.ehcache.config.units.MemoryUnit;
  */
 @Slf4j
 public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
+
     @Getter
     private final String nodeName;
     @Getter
@@ -47,8 +44,8 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
 
     @lombok.Builder(builderClassName = "Builder")
     protected CreateCacheConfigurationTask(
-        @Nonnull String name,
-        Method method,
+        @NonNull String name,
+        @Nullable Method method,
         @Singular("cacheSettings") List<CacheSettings> cacheSettings,
         boolean overrideOnUpdate
     ) {
@@ -73,7 +70,11 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
 
     public CacheSettings getCacheSettings() {
         return cacheSettings[0];
+    }
 
+    @Override
+    public String toString() {
+        return "Cache configuration create task for " + nodeName + (method == null ? "" : " (for method " + method + ") " + Arrays.asList(cacheSettings));
     }
 
     @Override
@@ -115,8 +116,9 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
                     heap.setProperty("class", Ehcache3ResourcePoolBuilder.class.getName());
                     heap.setProperty("resourceType", ResourceType.Core.HEAP.name());
                     heap.setProperty("resourceUnit", EntryUnit.ENTRIES.name());
-                    heap.setProperty("size", (long) settings.getMaxElementsInMemory());
+                    heap.setProperty("size", settings.getMaxElementsInMemory());
 
+                    log.info("Creating {}", heap);
                     // resourcePoolsBuilder/pools/disk
                     if (settings.isOverflowToDisk() && (settings.getMaxSizeOnDiskMB() > 0 || settings.getMaxElementsOnDisk() > 0)) {
                         final Node disk = resourcePools.addNode("disk", NodeTypes.ContentNode.NAME);
@@ -126,7 +128,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
                         disk.setProperty("resourceUnit", MemoryUnit.MB.name());
                         long size = 1000L;
                         if (settings.getMaxSizeOnDiskMB() > 0) {
-                            size = (long) settings.getMaxSizeOnDiskMB();
+                            size = settings.getMaxSizeOnDiskMB();
                         } else {
                             if (settings.getMaxElementsOnDisk() > 0) {
                                 // Size estimate taken from : info.magnolia.module.cache.ehcache3.setup.MigrateEhCache2ConfigurationTask.java:137
@@ -134,6 +136,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
                             }
                         }
                         disk.setProperty("size", size);
+                        log.info("Creating {}", disk);
                     }
                 }
 
@@ -155,7 +158,7 @@ public class CreateCacheConfigurationTask extends AbstractRepositoryTask {
         if (node == null) {
             node = session.getNode(configPath).addNode(path, NodeTypes.ContentNode.NAME);
             consume.accept(node);
-            log.info("Created {}", node);
+            log.info("Created {} because {}", node, this);
         } else {
 
             if (overrideOnUpdate) {
