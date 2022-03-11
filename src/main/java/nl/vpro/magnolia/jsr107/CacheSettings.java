@@ -1,9 +1,6 @@
 package nl.vpro.magnolia.jsr107;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +12,7 @@ import java.util.Objects;
 import org.apache.commons.lang3.ClassUtils;
 
 /**
- * See https://documentation.magnolia-cms.com/display/DOCS/Ehcache+module
+ * See https://documentation.magnolia-cms.com/display/DOCS60/Ehcache+3+module
  * @author Michiel Meeuwissen
  * @since 1.11
  */
@@ -23,6 +20,7 @@ import org.apache.commons.lang3.ClassUtils;
 @Getter
 @Builder(builderClassName = "Builder")
 @Slf4j
+@ToString
 public class CacheSettings {
 
     public static CacheSettings of(DefaultCacheSettings defaults) {
@@ -102,6 +100,11 @@ public class CacheSettings {
                 timeToLiveSeconds(null);
             }
             this.eternal = eternal;
+            return this;
+        }
+
+        public CacheSettings.Builder blocking(Boolean blocking) {
+            this.blocking = blocking != null && blocking;
             return this;
         }
 
@@ -200,7 +203,7 @@ public class CacheSettings {
     Integer diskExpiryThreadIntervalSeconds;
 
     /**
-     * Size to allocate to DiskStore for a spool buffer. Writes are made to this area and then asynchronously written to disk. Default: 30MB. Each spool buffer is used only by its cache. If OutOfMemory errors, you may need to lower this value. To improve DiskStore performance consider increasing it. Trace level logging in the DiskStore will show if put back ups are occurring.
+     * Size to allocate to DiskStore for a spool buffer. Writes are made to this area and then asynchronously written to disk. Default: 30MB. Each spool buffer is used only by its cache. If OutOfMemory errors, you may need to lower this value. To improve DiskStore performance consider increasing it. Trace level logging in the DiskStore will show if put back-ups are occurring.
      */
     @Deprecated
     Integer diskSpoolBufferSizeMB;
@@ -212,5 +215,13 @@ public class CacheSettings {
      */
     int blockingTimeout;
 
+
+    /**
+     * Whether the cache should be blocking
+     * @since 1.20
+     */
     boolean blocking;
+
+
+
 }
