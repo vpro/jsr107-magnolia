@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.annotation.Nonnull;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.CacheEntryListenerConfiguration;
@@ -19,6 +18,7 @@ import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.ehcache.core.Ehcache;
 import org.ehcache.event.CacheEvent;
 import org.ehcache.event.EventFiring;
@@ -416,9 +416,9 @@ class AdaptedCache<K, V> implements Cache<K, V> {
 
 
     @Override
-    @Nonnull
+    @NonNull
     public Iterator<Entry<K, V>> iterator() {
-        final Iterator keys = mgnlCache.getKeys().iterator();
+        final Iterator<Object> keys = mgnlCache.getKeys().iterator();
         return new Iterator<Entry<K, V>>() {
             @Override
             public boolean hasNext() {
