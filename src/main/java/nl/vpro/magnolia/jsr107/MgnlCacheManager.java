@@ -7,9 +7,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.net.URI;
 import java.util.*;
 import java.util.function.Function;
@@ -17,10 +15,7 @@ import java.util.function.IntFunction;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
-import javax.cache.annotation.CacheKeyGenerator;
-import javax.cache.annotation.CacheKeyInvocationContext;
-import javax.cache.annotation.CacheResolver;
-import javax.cache.annotation.GeneratedCacheKey;
+import javax.cache.annotation.*;
 import javax.cache.configuration.Configuration;
 import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
@@ -31,7 +26,7 @@ import org.jsr107.ri.annotations.guice.CacheLookupUtil;
 
 /**
  * Adapts a magnolia {@link CacheFactoryProvider} to a {@link CacheManager}. This is needed for cache-annotations-ri-guice, but
- * it can be used more genericly for code which desires such a cache manager.
+ * it can be used more generically for code which desires such a cache manager.
  *
  * @author Michiel Meeuwissen
  * @since 1.0
@@ -84,30 +79,22 @@ public class MgnlCacheManager implements CacheManager {
         return factory.get();
     }
 
-    private Properties properties = new Properties();
+    @lombok.Getter
+    private final Properties properties = new Properties();
 
     @Override
     public CachingProvider getCachingProvider() {
         return null;
-
     }
 
     @Override
     public URI getURI() {
         return null;
-
     }
 
     @Override
     public ClassLoader getClassLoader() {
         return MgnlCacheManager.class.getClassLoader();
-
-    }
-
-    @Override
-    public Properties getProperties() {
-        return properties;
-
     }
 
     @Override
