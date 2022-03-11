@@ -10,7 +10,7 @@ See
 - https://www.magnolia-cms.com/
 - https://github.com/jsr107
 
-After installation you can cache the result of any method of any guice managed bean by adding the `@CacheResult` annotation.
+After installation, you can cache the result of any method of any guice managed bean by adding the `@CacheResult` annotation.
 
 [source,java]
 ----
