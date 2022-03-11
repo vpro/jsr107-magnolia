@@ -32,5 +32,8 @@ public @interface DefaultCacheSettings  {
      */
     int blockingTimeout() default 10000;
 
+    /**
+     * @since 1.20
+     */
     boolean blocking() default false;
 }
