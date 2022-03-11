@@ -18,7 +18,7 @@ import org.apache.commons.lang3.ClassUtils;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-@Builder(builderClassName = "Builder")
+@lombok.Builder(builderClassName = "Builder")
 @Slf4j
 @ToString
 public class CacheSettings {
