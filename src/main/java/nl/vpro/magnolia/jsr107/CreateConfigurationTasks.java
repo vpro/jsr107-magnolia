@@ -41,22 +41,19 @@ public class CreateConfigurationTasks {
      * @since 1.15
      */
     public static Node getPath(Session session) throws RepositoryException {
-        RepositoryException first = null;
+        RepositoryException firstException = null;
         for(String proposal : PATHS) {
             try {
                 return session.getNode(proposal);
             } catch (RepositoryException re) {
-                if (first == null) {
-                    first = re;
+                if (firstException == null) {
+                    firstException = re;
                 }
                 log.warn("{}: {}, falling back to backwards compatibility", proposal, re.getClass().getName());
             }
 
         }
-        if (first == null) {
-            throw new IllegalStateException();
-        }
-        throw first;
+        throw firstException;
     }
 
     /**
