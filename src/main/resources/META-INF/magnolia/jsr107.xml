@@ -18,7 +18,7 @@
     </dependency>
     <dependency>
     <name>cache</name>
-      <version>5.4/*</version>
+      <version>5.9/*</version>
     </dependency>
   </dependencies>
 </module>
