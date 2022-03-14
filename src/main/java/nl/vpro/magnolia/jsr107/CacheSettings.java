@@ -11,6 +11,8 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.ClassUtils;
 
+import com.google.common.base.MoreObjects;
+
 /**
  * See https://documentation.magnolia-cms.com/display/DOCS60/Ehcache+3+module
  * @author Michiel Meeuwissen
@@ -20,7 +22,6 @@ import org.apache.commons.lang3.ClassUtils;
 @Getter
 @lombok.Builder(builderClassName = "Builder")
 @Slf4j
-@ToString
 public class CacheSettings {
 
     public static CacheSettings of(DefaultCacheSettings defaults) {
@@ -222,6 +223,24 @@ public class CacheSettings {
      */
     boolean blocking;
 
-
-
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .omitNullValues()
+            .add("copyOnRead", copyOnRead)
+            .add("copyOnWrite", copyOnWrite)
+            .add("eternal", eternal)
+            .add("maxElementsInMemory", maxElementsInMemory)
+            .add("maxElementsOnDisk", maxElementsOnDisk)
+            .add("maxSizeOnDiskMB", maxSizeOnDiskMB)
+            .add("memoryStoreEvictionPolicy", memoryStoreEvictionPolicy)
+            .add("overflowToDisk", overflowToDisk)
+            .add("timeToIdleSeconds", timeToIdleSeconds)
+            .add("timeToLiveSeconds", timeToLiveSeconds)
+            .add("diskExpiryThreadIntervalSeconds", diskExpiryThreadIntervalSeconds)
+            .add("diskSpoolBufferSizeMB", diskSpoolBufferSizeMB)
+            .add("blockingTimeout", blockingTimeout)
+            .add("blocking", blocking)
+            .toString();
+    }
 }
