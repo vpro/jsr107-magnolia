@@ -40,7 +40,6 @@ public class MockCacheFactory implements CacheFactory {
 
     @Override
     public Cache getCache(String name) {
-
         return caches.computeIfAbsent(name, (n) -> {
             if (blocking) {
                 if (cm.getCache(name, Serializable.class, Serializable.class) == null) {
