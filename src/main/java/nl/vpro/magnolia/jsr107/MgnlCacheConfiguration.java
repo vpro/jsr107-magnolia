@@ -1,5 +1,7 @@
 package nl.vpro.magnolia.jsr107;
 
+import java.io.Serializable;
+
 import javax.cache.configuration.Configuration;
 
 /**
@@ -7,18 +9,18 @@ import javax.cache.configuration.Configuration;
  * @author Michiel Meeuwissen
  * @since 1.0
  */
-public class MgnlCacheConfiguration implements Configuration<Object, Object> {
+public class MgnlCacheConfiguration implements Configuration<Serializable, Serializable> {
 
     static final MgnlCacheConfiguration INSTANCE = new MgnlCacheConfiguration();
 
     @Override
-    public Class<Object> getKeyType() {
-        return Object.class;
+    public Class<Serializable> getKeyType() {
+        return Serializable.class;
     }
 
     @Override
-    public Class<Object> getValueType() {
-        return Object.class;
+    public Class<Serializable> getValueType() {
+        return Serializable.class;
     }
 
     @Override
