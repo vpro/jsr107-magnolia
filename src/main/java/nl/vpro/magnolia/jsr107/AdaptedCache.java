@@ -66,7 +66,11 @@ class AdaptedCache<K, V> implements Cache<K, V>, AdaptedCacheMBean {
         this.cacheManager = manager;
         this.configuration = configuration;
         listeners = (Listeners<K, V>) LISTENERS.computeIfAbsent(this.mgnlCache.getName(), Listeners::new);
-        MBeanUtil.registerMBean("JSR107AdaptedCache,name=" + mgnlCache.getName(), this);
+        try {
+            MBeanUtil.registerMBean("JSR107AdaptedCache,name=" + mgnlCache.getName(), this);
+        } catch (IllegalStateException ise) {
+            log.warn(ise.getMessage());
+        }
     }
 
 
