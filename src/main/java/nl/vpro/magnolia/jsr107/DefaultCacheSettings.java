@@ -36,4 +36,12 @@ public @interface DefaultCacheSettings  {
      * @since 1.20
      */
     boolean blocking() default false;
+
+
+    /**
+     * @since 1.20
+     */
+    TrueFalseDefault overrideOnUpdate() default TrueFalseDefault.DEFAULT;
+
+
 }

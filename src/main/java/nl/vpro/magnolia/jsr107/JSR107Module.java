@@ -24,8 +24,7 @@ public class JSR107Module implements ModuleLifecycle {
     @Override
     public void start(ModuleLifecycleContext moduleLifecycleContext) {
         log.info("javax.cache.CacheManager: {}. Version {}. See https://github.com/vpro/jsr107-magnolia",
-            mgnlCacheManager,  moduleLifecycleContext.getCurrentModuleDefinition().getVersion());
-
+            mgnlCacheManager, moduleLifecycleContext.getCurrentModuleDefinition().getVersion());
     }
 
     @Override

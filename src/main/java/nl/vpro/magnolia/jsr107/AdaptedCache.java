@@ -1,5 +1,6 @@
 package nl.vpro.magnolia.jsr107;
 
+import info.magnolia.cms.util.MBeanUtil;
 import info.magnolia.module.cache.BlockingCache;
 import info.magnolia.module.cache.ehcache3.EhCache3Wrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -12,40 +13,45 @@ import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.CacheEntryListenerConfiguration;
 import javax.cache.configuration.Configuration;
+import javax.cache.event.EventType;
 import javax.cache.event.*;
 import javax.cache.integration.CompletionListener;
-import javax.cache.processor.EntryProcessor;
-import javax.cache.processor.EntryProcessorException;
-import javax.cache.processor.EntryProcessorResult;
+import javax.cache.processor.*;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.ehcache.config.CacheRuntimeConfiguration;
 import org.ehcache.core.Ehcache;
-import org.ehcache.event.CacheEvent;
-import org.ehcache.event.EventFiring;
-import org.ehcache.event.EventOrdering;
+import org.ehcache.event.*;
 
 import static nl.vpro.magnolia.jsr107.CacheValue.of;
 
 /**
  * Implements a {@link javax.cache.Cache} backed by a {@link info.magnolia.module.cache.Cache}
  *
- * This class is basicly stateless, and only wraps stuff in the magnolia cache system.
+ * This class is basically stateless, and only wraps stuff in the magnolia cache system.
  *
- * Because there are not cache events in magnolia, the listeners are stored staticly by cache name in this class see {@link #LISTENERS}.
+ * Because there are no cache events in magnolia, the listeners are stored statically by cache name in this class see {@link #LISTENERS}.
  *
  * @author Michiel Meeuwissen
  * @since 1.0
  */
 @Slf4j
-class AdaptedCache<K, V> implements Cache<K, V> {
+class AdaptedCache<K, V> implements Cache<K, V>, AdaptedCacheMBean {
 
     protected static final Object NULL = AdaptedCache.class.getName() + ".NULL";
     protected static final Object EXCEPTION = AdaptedCache.class.getName() + ".EXCEPTION";
-    private final info.magnolia.module.cache.Cache mgnlCache;
-    private final CacheManager cacheManager;
-    private final Configuration<?, ?> configuration;
 
     private static final Map<String, Listeners<?, ?>> LISTENERS = new ConcurrentHashMap<>();
+
+    private final CacheManager cacheManager;
+
+    /**
+     * The magnolia cache this is cache is backed by.
+     */
+    private final info.magnolia.module.cache.Cache mgnlCache;
+
+    private final Configuration<?, ?> configuration;
 
     private final Listeners<K, V> listeners;
 
@@ -60,7 +66,9 @@ class AdaptedCache<K, V> implements Cache<K, V> {
         this.cacheManager = manager;
         this.configuration = configuration;
         listeners = (Listeners<K, V>) LISTENERS.computeIfAbsent(this.mgnlCache.getName(), Listeners::new);
+        MBeanUtil.registerMBean("JSR107AdaptedCache,name=" + mgnlCache.getName(), this);
     }
+
 
     @SuppressWarnings("unchecked")
     @Override
@@ -114,7 +122,8 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public void loadAll(Set<? extends K> keys, boolean replaceExistingValues, CompletionListener completionListener) {
+    public void loadAll(
+        Set<? extends K> keys, boolean replaceExistingValues, CompletionListener completionListener) {
         log.debug("loading {}", keys);
         throw new UnsupportedOperationException();
     }
@@ -273,18 +282,15 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     @Override
     public CacheManager getCacheManager() {
         return cacheManager;
-
     }
 
     @Override
     public void close() {
-
     }
 
     @Override
     public boolean isClosed() {
         return false;
-
     }
 
     @Override
@@ -343,7 +349,7 @@ class AdaptedCache<K, V> implements Cache<K, V> {
                     ehCache.getRuntimeConfiguration().deregisterCacheEventListener(
                         new EhcacheEventLister(this, cacheEntryListenerConfiguration));
                 } catch (Exception e) {
-                    log.warn("{}", e);
+                    log.warn("{}", e.getMessage(), e);
                 }
             }
         }
@@ -352,6 +358,34 @@ class AdaptedCache<K, V> implements Cache<K, V> {
     @Override
     public String toString() {
         return "Adapted mgnl cache " + mgnlCache.getClass().getName() + " " + mgnlCache.getName();
+    }
+
+    @Override
+    public int getSize() {
+        return mgnlCache.getSize();
+    }
+
+    @Override
+    public int getBlockingTimeout() {
+        if (mgnlCache instanceof BlockingCache) {
+            return ((BlockingCache) mgnlCache).getBlockingTimeout();
+        } else {
+            return -1;
+        }
+    }
+
+    @Override
+    public String getConfiguration() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("class=").append(mgnlCache.getClass().getSimpleName()).append("\n");
+        builder.append("keytype=").append(configuration.getKeyType()).append("\n");
+        builder.append("valuetype=").append(configuration.getValueType()).append("\n");
+        if (mgnlCache instanceof EhCache3Wrapper) {
+
+            CacheRuntimeConfiguration runtimeConfiguration = ((EhCache3Wrapper) mgnlCache).getWrappedEhCache().getRuntimeConfiguration();
+            builder.append(ReflectionToStringBuilder.toString(runtimeConfiguration));
+        }
+        return builder.toString();
     }
 
 
@@ -544,8 +578,6 @@ class AdaptedCache<K, V> implements Cache<K, V> {
             this.cacheEntryEventFilter = cacheEntryListenerConfiguration.getCacheEntryEventFilterFactory().create();
             this.cacheEntryListener = cacheEntryListenerConfiguration.getCacheEntryListenerFactory().create();
             this.cache = cache;
-
-
         }
 
         @Override

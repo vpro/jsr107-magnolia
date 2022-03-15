@@ -6,8 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 
 import org.apache.commons.lang3.ClassUtils;
 
@@ -222,6 +221,9 @@ public class CacheSettings {
      * @since 1.20
      */
     boolean blocking;
+
+
+    TrueFalseDefault overrideOnUpdate;
 
     @Override
     public String toString() {

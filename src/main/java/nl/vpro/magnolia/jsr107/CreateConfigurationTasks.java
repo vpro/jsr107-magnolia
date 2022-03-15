@@ -51,7 +51,6 @@ public class CreateConfigurationTasks {
                 }
                 log.warn("{}: {}, falling back to backwards compatibility", proposal, re.getClass().getName());
             }
-
         }
         throw firstException;
     }
@@ -85,16 +84,16 @@ public class CreateConfigurationTasks {
                         result.add(CreateCacheConfigurationTask.builder()
                             .name(getCacheName(m , cr))
                             .method(m)
-                            .overrideOnUpdate(overrideOnUpdate)
+                            .overrideOnUpdate(settings.overrideOnUpdate.orElse(overrideOnUpdate))
                             .cacheSettings(settings)
                             .build());
                         if (StringUtils.isNotBlank(cr.exceptionCacheName())) {
+                            CacheSettings esettings = CacheSettings.of(exceptionCacheSettings);
                             result.add(CreateCacheConfigurationTask.builder()
                                 .name(cr.exceptionCacheName())
                                 .method(m)
-                                .overrideOnUpdate(overrideOnUpdate)
-                                .cacheSettings(settings)
-                                .cacheSettings(CacheSettings.of(exceptionCacheSettings))
+                                .overrideOnUpdate(esettings.overrideOnUpdate.orElse(overrideOnUpdate))
+                                .cacheSettings(esettings)
                                 .build());
                         }
 

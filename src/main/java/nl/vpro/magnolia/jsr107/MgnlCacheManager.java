@@ -13,8 +13,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
-import javax.cache.Cache;
-import javax.cache.CacheManager;
+import javax.cache.*;
 import javax.cache.annotation.*;
 import javax.cache.configuration.Configuration;
 import javax.cache.spi.CachingProvider;
@@ -40,8 +39,7 @@ public class MgnlCacheManager implements CacheManager {
 
     private final CacheLookupUtil cacheLookupUtil;
 
-    private static final Map<Class<? extends CacheKeyGenerator>, Function<GeneratedCacheKey, Object[]>>
-    PARAMETER_GETTER = new HashMap<>();
+    private static final Map<Class<? extends CacheKeyGenerator>, Function<GeneratedCacheKey, Object[]>> PARAMETER_GETTER = new HashMap<>();
 
     static {
         PARAMETER_GETTER.put(MgnlObjectsAwareCacheKeyGenerator.class,
