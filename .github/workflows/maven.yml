@@ -40,6 +40,6 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Deploy with Maven
-      run: OSSRH_PASSWORD=${{ secrets.OSSRH_PASSWORD }} mvn -B -Pdeploy  deploy -DskipTests=true  -Dgpg.skip=false
+      run:  mvn -B -Pdeploy  deploy -DskipTests=true  -Dgpg.skip=false
       if: ${{ github.event_name == 'push' }}
 
