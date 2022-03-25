@@ -54,10 +54,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
-  <prerequisites>
-    <maven>3.3.9</maven>
-  </prerequisites>
-
   <build>
     <defaultGoal>install</defaultGoal>
     <plugins>
@@ -207,7 +203,7 @@
             <version>1.6.8</version>
             <extensions>true</extensions>
             <configuration>
-              <serverId>vpro-ossrh</serverId>
+              <serverId>vproossrh</serverId>
               <nexusUrl>https://oss.sonatype.org/</nexusUrl>
               <autoReleaseAfterClose>true</autoReleaseAfterClose>
             </configuration>
