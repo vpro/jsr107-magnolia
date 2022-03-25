@@ -34,8 +34,8 @@
 
 
   <scm>
-    <connection>scm:git:${project.scm.url}</connection>
-    <developerConnection>scm:git:${project.scm.url}</developerConnection>
+    <connection>scm:git:${project.scm.url}.git</connection>
+    <developerConnection>scm:git:${project.scm.url}.git</developerConnection>
     <url>https://github.com/vpro/jsr107-magnolia</url>
     <tag>HEAD</tag>
   </scm>
