@@ -44,11 +44,11 @@
     <jcr.version>2.0</jcr.version>
     <slf4j.version>1.7.36</slf4j.version>
 
-    <magnolia.version>6.2.22</magnolia.version>
+    <magnolia.version>6.2.24</magnolia.version>
     <magnolia.cache.version>5.9.4</magnolia.cache.version>
     <ehcache.version>3.7.1</ehcache.version> <!-- should be in sync with version of magnolia.cache -->
-    <junit.version>5.9.0</junit.version>
-    <mockito.version>4.7.0</mockito.version>
+    <junit.version>5.9.1</junit.version>
+    <mockito.version>4.8.0</mockito.version>
     <lombok.version>1.18.24</lombok.version>
     <assertj.version>3.23.1</assertj.version>
 
@@ -186,7 +186,7 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version>3.24.0</version>
+      <version>3.25.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
