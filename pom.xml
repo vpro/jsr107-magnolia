@@ -47,10 +47,10 @@
     <magnolia.version>6.2.27</magnolia.version>
     <magnolia.cache.version>5.9.4</magnolia.cache.version>
     <ehcache.version>3.7.1</ehcache.version> <!-- should be in sync with version of magnolia.cache -->
-    <junit.version>5.9.1</junit.version>
+    <junit.version>5.10.3</junit.version>
     <mockito.version>4.11.0</mockito.version>
-    <lombok.version>1.18.24</lombok.version>
-    <assertj.version>3.23.1</assertj.version>
+    <lombok.version>1.18.34</lombok.version>
+    <assertj.version>3.26.3</assertj.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -186,7 +186,7 @@
     <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
-      <version>3.28.0</version>
+      <version>3.46.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
