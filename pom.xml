@@ -50,7 +50,7 @@
     <junit.version>5.10.3</junit.version>
     <mockito.version>4.11.0</mockito.version>
     <lombok.version>1.18.34</lombok.version>
-    <assertj.version>3.26.3</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
